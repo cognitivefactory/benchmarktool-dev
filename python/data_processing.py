@@ -1,3 +1,4 @@
+import re
 from os import chdir, getcwd
 wd=getcwd()
 chdir(wd)
@@ -15,13 +16,13 @@ chdir(wd)
         
 '''
 def create_annoted_data(filename, target, label):
-    f = open("../data/"+filename, "r")
+    f = open(filename, "r")
     l_target = len(target)
     l_label = len(label)
     if not f or l_target==0 or l_label==0 or l_target!=l_label:
         return None
     data = []
-    new_file = open("../data/"+filename+"_annoted", "w")
+    new_file = open(filename+"_annotated", "w")
     if not new_file:
         return None
     strs = list(f.read().splitlines())
@@ -52,10 +53,14 @@ def train_test_split(data, training_proportion):
     
     return data[:train_proportion], data[train_proportion:]
 
-filename = "my_data"
-target = ["cheval", "âne"]
-label = ["animal","animal"]
 
-data = create_annoted_data(filename, target, label)
-if data:
-    train, test = train_test_split(data, 0.6)
+
+txt = "(\"aze\",'entities':[12,2,\"animal\"])"
+regex = "\(\".+\",\'entities\':\[[0-9]+,[0-9]+,\".+\"\]\)"
+x = re.findall(regex, txt) 
+
+
+if (x):
+  print("YES! We have a match!")
+else:
+  print("No match")
