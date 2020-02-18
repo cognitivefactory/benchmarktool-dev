@@ -1,2 +1,2 @@
 # benchmarktool-dev
-Benchmark tool - Internship project for TPS students
+Benchmark tool - Internship project for TPS students.
