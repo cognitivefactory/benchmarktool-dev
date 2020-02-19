@@ -4,4 +4,4 @@ import random
 from pathlib import Path
 import spacy
 from past.builtins import execfile
-execfile('data_process.py')
+#execfile('data_process.py')

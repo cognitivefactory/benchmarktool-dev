@@ -1,10 +1,6 @@
 '''
     TRAIN TEST SPLIT
-    > Split the dataset in two
-    input : 
-        data : data structure with annotations
-        training_proportion -- float between 0 and 1 : 
-            proportion of the data used for the training
+    Split the dataset in two according to a specified proportion
     output : 
         train, test : two datasets
 '''
