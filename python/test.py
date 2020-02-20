@@ -1,25 +1,21 @@
-import re
-'''
-rgx_str = "((\"\w+[^\"]*\")|(\'\w+[^']*'))"
-key = "\[\([0-9]+,[0-9]+,"+rgx_str+"\)\]"
-#rgx = '\('+rgx_str+',{\'entities\':'+key+'}\)'
-rgx = '^\('+rgx_str+'$\)'
-test = "('ok')"
-text = "('Quel beau cheval!',{'entities':[(10,15,'animal')]})"
-m = re.findall(rgx , test)
-'''
-f = open("../data/test_annotated", "r")
-t = "[('Quel beau cheval', {'entities': [(10, 15, 'animal')]}), ('Le cheval.', {'entities': [(3, 8, 'animal')]})]"
-f1 = f.read()
-rgx_str = "((\"\w+[^\"]*\")|('\w+[^']*'))" 
-rgx_key = "\[\(\s*[0-9]+\s*,\s*[0-9]+\s*,\s*"+rgx_str+"\s*\)\]"
-pattern = '\('+rgx_str+',\s*{\'entities\':\s*'+rgx_key+'}\)'
-rgx = '\['+pattern+'(,\s*'+pattern+')*(,\s*'+pattern+')?\]'
-p = re.compile(rgx)
-if p.match(f1):
-    print(True)
-else:
-    print(False)
-f.close()
+import unittest
+exec(open("./data_process.py").read())
 
-print(p.split(f1))
+root = os.path.abspath(os.path.join(os.getcwd(), os.pardir))
+data_path = os.path.join(root, "data")
+file = os.path.join(data_path,"test")
+
+class TestCheckAnnotation(unittest.TestCase):
+    def test_basic_true(self):
+        self.assertTrue(check_annotation(file+"_annotated"))
+    def test_dict_true(self):
+        self.assertTrue(check_annotation(file+"2_annotated"))
+    def test_empty(self):
+        self.assertFalse(check_annotation(file+"5_annotated"))
+    def test_basic_false(self):
+        self.assertFalse(check_annotation(file+"3_annotated"))
+    def test_dict_false(self):
+        self.assertFalse(check_annotation(file+"4_annotated"))
+        
+if __name__=='__main__':
+      unittest.main()

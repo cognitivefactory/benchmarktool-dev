@@ -1,8 +1,5 @@
 import re
-from os import chdir, getcwd
-wd=getcwd()
-chdir(wd)
-
+import os
 '''
     CREATE_ANNOTATION
         for a given file, create a new one entitled filename_annotated
@@ -41,31 +38,18 @@ def create_annotation(filename, lst_target, lst_label):
         using REGEX to find the pattern :
             ("or' string 'or", 'entities':[(nb,nb,"or' string "or')]})
     Return : bool
-    
-    
 '''
 def check_annotation(filename):
     f = open(filename, "r")
     f1 = f.read()
     f.close()
-    rgx_str = "((\"\w+[^\"]*\")|('\w+[^']*'))" 
-    rgx_key = "\[\(\s*[0-9]+\s*,\s*[0-9]+\s*,\s*"+rgx_str+"\s*\)\]"
-    pattern = '\('+rgx_str+',\s*{\'entities\':\s*'+rgx_key+'}\)'
+    rgx_str = "((\"\w+[^\"]*\")|('\w+[^']*'))"
+    rgx_dict = "(\s*,\s*{[^\}]*})*"          
+    rgx_key = "\[\(\s*[0-9]+\s*,\s*[0-9]+\s*,\s*"+rgx_str+"\s*\)\]}"
+    pattern = '\('+rgx_str+',\s*{\'entities\':\s*'+rgx_key+rgx_dict+'\)'
     rgx = '\['+pattern+'(,\s*'+pattern+')*(,\s*'+pattern+')?\]'
     p = re.compile(rgx)
     if p.match(f1):
         return True
     else:
         return False
-
-'''
-filename = "../data/my_data"
-if not create_annotation(filename, ["cheval"], ["animal"]):
-    print("Error : File cannot be created")
-else:
-    if not check_annotation(filename+"_annotated"):
-        print("Error : the file doesn't match the standard")
-'''
-
-
-
