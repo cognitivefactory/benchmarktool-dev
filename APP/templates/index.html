@@ -2,7 +2,15 @@
 {% block head %}
 {%endblock %}
 {% block body %}
-<h1> Template </h1>
-<button class="btn" id="validation">Submit</button>
-<h1>{{jsdata}}</h1>
+<h1> Select a file </h1>
+<form method="POST" enctype="multipart/form-data" action ="/analyse">
+    <div>
+        <label>Sélectionnez le fichier à utiliser</label>
+        <input type="file" id="file" name="file">
+    </div>
+    <div>
+        <button>Submit</button>
+    </div>
+</form>
+<h1></h1>
 {%endblock %}
