@@ -1,22 +1,21 @@
 from flask import Flask, render_template, url_for
 from flask import make_response, redirect, request, jsonify
 app = Flask(__name__)
+
 @app.route('/')
 def index():
     title ="my_app"
     return render_template("index.html",title= title)
     
-@app.route('/resultats/<path>', methods=['GET'])
-def results(path):
+@app.route('/analyse', methods=['GET','POST'])
+def analyse():
     title = 'Result'
-    return render_template('layouts/resultats.html',
-                           title=title)
+    data = request.files['file']
+    res=data.read()
+    res = res.decode("utf-8") 
+    return render_template('/results.html',
+                           title=title, res=res)
 
-@app.route('/postmethod', methods = ['POST'])
-def post_javascript_data():
-    jsdata = request.form['data']
-    params = { 'path' : jsdata}
-    return jsonify(params)
 
 if __name__ =="__main__":
     app.run(debug=True)
