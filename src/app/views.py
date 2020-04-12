@@ -26,6 +26,13 @@ def analyse():
     res = data.read()
     res = json.loads(res)
     print(res)
+    return "ok"
+    '''
+    data = request.files['file']
+    res = data.read()
+    res = json.loads(res)
+    print(res)
+    '''
 
 
 '''

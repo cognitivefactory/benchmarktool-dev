@@ -1,0 +1,14 @@
+[{
+	"text": "Cheval",
+	"entities": [[0,6,"animal"]]
+  },
+{
+  "text": "Cheval",
+  "entities": [
+    [
+      0,
+      6,
+      "animal"
+    ]
+  ]
+}]
