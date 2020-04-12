@@ -7,7 +7,6 @@ def index():
     json = request.get_json()
     return render_template("index.html")
 
-
 @app.route('/data_train')
 def data_train():
     return render_template("data_train.html")
@@ -26,21 +25,4 @@ def analyse():
     res = data.read()
     res = json.loads(res)
     print(res)
-    return "ok"
-    '''
-    data = request.files['file']
-    res = data.read()
-    res = json.loads(res)
-    print(res)
-    '''
-
-
-'''
-def analyse():
-    title = 'Result'
-    data = request.files['file']
-    res=data.read()
-    res = res.decode("utf-8") 
-    return render_template('/results.html')
-
-'''
+    return render_template("data_train.html")

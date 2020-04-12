@@ -1,5 +1,6 @@
 
 $(document).ready(function () {
+  //**Menu */
   $('.burger, .overlay').click(function () {
     $('.burger').toggleClass('clicked');
     $('.overlay').toggleClass('show');
@@ -7,6 +8,7 @@ $(document).ready(function () {
     $('body').toggleClass('overflow');
   })
 
+  //**Popup */
   $(function popup() {
     // Open Popup
     $('[popup-open]').on('click', function () {
