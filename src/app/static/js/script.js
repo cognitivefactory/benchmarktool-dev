@@ -1,5 +1,27 @@
 
 $(document).ready(function () {
+  //**Ajax envoi fichier json */
+  $('form[name="addData"]').submit(function(e){
+    var fd = new FormData();
+    fd.append('file', $('#file')[0].files[0]);
+    $.ajax({
+      url:"/analyse",
+      data: fd,
+      processData: false,
+      contentType: false,
+      type: 'POST',
+      success: function(data){
+        alert("fichier ajouté");
+      },
+      error: function(err){
+        alert("erreur")
+        console.log(err);
+      }      
+    });
+    e.preventDefault();
+  })
+
+
   //**Menu */
   $('.burger, .overlay').click(function () {
     $('.burger').toggleClass('clicked');
