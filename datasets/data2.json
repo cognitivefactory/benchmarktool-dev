@@ -1,0 +1,8 @@
+[{
+	"text": "Cheval",
+	"entities": [[0,6,"animal"], [0,6,"équidé"]]
+  },
+{
+	"text": "Quel cheval !",
+	"entities": [[5,11,"animal"],[5,11,"horse"]]
+  }]

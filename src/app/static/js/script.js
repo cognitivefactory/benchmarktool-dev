@@ -2,6 +2,7 @@
 $(document).ready(function () {
 
   $('#submit-data').click(function () {
+    alert("click");
     var fd = new FormData();
     fd.append('file', $('#file-input')[0].files[0]);
     
@@ -15,7 +16,6 @@ $(document).ready(function () {
         return;
       }
       response.json().then(function(data){
-        alert("le fichier a été ajouté \n");
         console.log(data);
       })
     })
