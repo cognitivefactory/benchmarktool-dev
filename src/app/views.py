@@ -1,10 +1,9 @@
-from flask import render_template, request, jsonify
+from flask import render_template, request, make_response, jsonify
 import json
 from app import app
 
 @app.route('/')
 def index():
-    json = request.get_json()
     return render_template("index.html")
 
 @app.route('/data_train')
@@ -21,8 +20,11 @@ def results():
 
 @app.route('/analyse', methods=['POST'])
 def analyse():
+    print("----\n")
+    print(request.headers)
     data = request.files['file']
     res = data.read()
     res = json.loads(res)
     print(res)
-    return render_template("data_train.html")
+
+    return make_response(jsonify({"message": ":JSON received"}), 200)
