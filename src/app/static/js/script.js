@@ -18,6 +18,7 @@ $(document).ready(function () {
       response.json().then(function(data){
         alert("Ficher ajouté");
         console.log(data);
+        window.location = window.origin + '/models'
       })
     })
     .catch((error) => {
