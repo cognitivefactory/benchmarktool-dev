@@ -27,7 +27,7 @@ def analyse():
     res = data.read()
     res = json.loads(res)
     d = Dataset()
-    if !d.isCorrect(res):
+    if not d.isCorrect(res):
         return make_response(jsonify({"message " ": file does not correspond to the standard"}), 100)
-
+    print(d)
     return make_response(jsonify({"message": ":JSON received"}), 200)
