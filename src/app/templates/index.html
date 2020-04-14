@@ -1,0 +1,16 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="index">
+  <h1>Benchmark-tool</h1>
+  <p>Outil de comparaison de la performance de librairies de NER en français !</p>
+
+  <div>
+    <label>Sélectionnez le fichier à utiliser</label>
+    <input type="file" id="file-input" name="file">
+  </div>
+  <div>
+    <button id="submit-data">Submit</button>
+  </div>
+  
+</div>
+{% endblock %}
