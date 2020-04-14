@@ -1,8 +1,7 @@
 
 $(document).ready(function () {
-
+  //**Add a file */
   $('#submit-data').click(function () {
-    alert("click");
     var fd = new FormData();
     fd.append('file', $('#file-input')[0].files[0]);
     
@@ -11,11 +10,13 @@ $(document).ready(function () {
       body: fd,
       cache: 'no-cache',
     })
+    //response from views.py
     .then(function(response){
       if(response.status !== 200){
         return;
       }
       response.json().then(function(data){
+        alert("Ficher ajouté");
         console.log(data);
       })
     })
@@ -24,51 +25,6 @@ $(document).ready(function () {
       return;
     });
   });
-
-  
-  // // POST
-  // fetch('/analyse', {
-
-  //   // Specify the method
-  //   method: 'POST',
-
-  //   // A JSON payload
-  //   body: JSON.stringify({
-  //     "greeting": "Hello from the browser!"
-  //   })
-  // }).then(function (response) { // At this point, Flask has printed our JSON
-  //   return response.text();
-  // }).then(function (text) {
-
-  //   alert('POST response: ');
-
-  //   // Should be 'OK' if everything was successful
-  //   alert(text);
-  // });
-
-
-
-
-
-
-  // //**Ajax envoi fichier json */
-  // // Select your input type file and store it in a variable
-  // const input =$('#fileinput');
-
-  // // This will upload the file after having read it
-  // const upload = (file) => {
-  //   fetch('/analyse', { // Your POST endpoint
-  //     method: 'POST',
-  //     body: file // This is your file object
-  //   }).then(function (response) { // At this point, Flask has printed our JSON
-  //     console.log("ok");
-  //     return response.text();
-  //   }).then(function (text) {
-  //     console.log('POST response: ');
-  //     // Should be 'OK' if everything was successful
-  //     console.log(text);
-  //   });
-  // };
 
   //**Menu */
   $('.burger, .overlay').click(function () {

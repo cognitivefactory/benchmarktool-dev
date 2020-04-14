@@ -1,6 +1,7 @@
 from flask import render_template, request, make_response, jsonify
 import json
 from app import app
+from dataset import Dataset
 
 @app.route('/')
 def index():
@@ -25,6 +26,8 @@ def analyse():
     data = request.files['file']
     res = data.read()
     res = json.loads(res)
-    print(res)
+    d = Dataset()
+    if !d.isCorrect(res):
+        return make_response(jsonify({"message " ": file does not correspond to the standard"}), 100)
 
     return make_response(jsonify({"message": ":JSON received"}), 200)
