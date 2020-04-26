@@ -2,22 +2,23 @@
 {% block content %}
 <div class="data_train">
   <h1>Données d'entraînement</h1>
-
-  <a class="open-button" popup-open="popup-1" href="javascript:popup">
-    Cliquer pour ouvrir la popup !</a>
   
-  <div class="popup" popup-name="popup-1">
-    <div class="popup-content">
-      <h2>Titre</h2>
-      <p>Lorem ipsum dolor sit amet,
-        consectetur adipiscing elit. Aliquam consequat diam ut tortor
-        dignissim, vel accumsan libero venenatis. Nunc pretium volutpat
-        convallis. Integer at metus eget neque hendrerit vestibulum.
-        Aenean vel mattis purus. Fusce condimentum auctor tellus eget
-        ullamcorper. Vestibulum sagittis pharetra tellus mollis vestibulum.
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
-      <a class="close-button" popup-close="popup-1" href="javascript:void(0)">x</a>
+  <p>Veuillez sélectionner un jeu de données d'entrainement.</p>
+  
+  <div class="train flex">
+    <div class="data flex">bank_annotations</div>
+    <a class="add flex" popup-open="popup-train" href="#">+</a>
+  </div>
+  
+  <div class="popup" popup-name="popup-train">
+    <div class="popup-content flex">
+      <a class="close-button" popup-close="popup-train" href="#">x</a>
+      <h1>Ajout d'un jeu de données d'entrainement</h1>
+      <label>Sélectionnez le fichier JSON à utiliser</label>
+      <input type="file" id="file-input" name="file">
+      <button id="submit-data">Ajouter</button>
     </div>
+  
   </div>
   
 </div>

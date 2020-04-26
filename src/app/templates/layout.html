@@ -4,8 +4,10 @@
 <head>
   <meta charset="utf-8">
   <title>Benchmark-tool</title>
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.css" />
   <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/data_train.css') }}" />
 
 </head>
 
@@ -17,6 +19,7 @@
       <li><a href="{{ url_for('data_train') }}">Données d'entraînement</a></li>
       <li><a href="{{ url_for('models') }}">Modèles disponibles</a></li>
       <li><a href="{{ url_for('results') }}">Test de performance</a></li>
+      <li><a href="{{ url_for('progression') }}">Progression des résultats</a></li>
     </ul>
   </nav>
   <div class="burger">

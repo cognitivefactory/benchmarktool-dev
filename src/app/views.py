@@ -19,6 +19,11 @@ def models():
 def results():
     return render_template("results.html")
 
+@app.route('/progression')
+def progression():
+    return render_template("progression.html")
+
+
 @app.route('/analyse', methods=['POST'])
 def analyse():
     print(request.headers)
@@ -44,9 +49,5 @@ def analyse():
     except:
         print("cannot open the file\n")
 
-    print("-----------\n")
-    print(message)
-    print("\n")
-    print(status)
     return make_response(jsonify({"message" : message}), status)
     
