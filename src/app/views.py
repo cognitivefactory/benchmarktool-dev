@@ -21,13 +21,32 @@ def results():
 
 @app.route('/analyse', methods=['POST'])
 def analyse():
-    print("----\n")
     print(request.headers)
-    data = request.files['file']
-    res = data.read()
-    res = json.loads(res)
-    d = Dataset()
-    if not d.isCorrect(res):
-        return make_response(jsonify({"message " ": file does not correspond to the standard"}), 100)
-    print(d)
-    return make_response(jsonify({"message": ":JSON received"}), 200)
+    status = 100 # = fail
+    message = ""
+    try:
+        content = request.files['file']
+        try: 
+            content = content.read()
+            try:
+                data = json.loads(content)
+                status = 200 # = success
+                message = data
+                d = Dataset()
+                if not d.isCorrect(data):
+                    del d
+                    status = 100 # = fail
+                    print("data structure is incorrect\n")
+            except:
+                print("JSON not correct\n")
+        except:
+            print("cannot read the file\n")
+    except:
+        print("cannot open the file\n")
+
+    print("-----------\n")
+    print(message)
+    print("\n")
+    print(status)
+    return make_response(jsonify({"message" : message}), status)
+    

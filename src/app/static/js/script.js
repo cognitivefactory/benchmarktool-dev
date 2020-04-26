@@ -12,12 +12,12 @@ $(document).ready(function () {
     })
     //response from views.py
     .then(function(response){
-      if(response.status !== 200){
+      if( response.status !== 200){
+        alert("Incorrect file");
         return;
       }
       response.json().then(function(data){
         alert("Ficher ajouté");
-        console.log(data);
         window.location = window.origin + '/models'
       })
     })
