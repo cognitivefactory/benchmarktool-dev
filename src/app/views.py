@@ -1,7 +1,7 @@
 from flask import render_template, request, make_response, jsonify
 import json
 from app import app
-from dataset import Dataset
+from train_dataset import TrainDataset
 
 @app.route('/')
 def index():
@@ -26,28 +26,36 @@ def progression():
 
 @app.route('/analyse', methods=['POST'])
 def analyse():
-    print(request.headers)
     status = 100 # = fail
-    message = ""
     try:
         content = request.files['file']
         try: 
             content = content.read()
             try:
-                data = json.loads(content)
-                status = 200 # = success
-                message = data
-                d = Dataset()
-                if not d.isCorrect(data):
-                    del d
-                    status = 100 # = fail
-                    print("data structure is incorrect\n")
-            except:
-                print("JSON not correct\n")
-        except:
-            print("cannot read the file\n")
-    except:
-        print("cannot open the file\n")
+                file = json.loads(content)
+                train_data = TrainDataset()
+                data = train_data.filter_json(file)
+                if not file : 
+                    message = "incorrect data structure (1)"
+                    return make_response(jsonify({"message" : message}), status)
 
-    return make_response(jsonify({"message" : message}), status)
-    
+                if not train_data.is_correct(data) :
+                    message = "incorrect data structure (2)"
+                    return make_response(jsonify({"message" : message}), status)
+
+                if not train_data.metadata(data) :
+                    message = "failed to create metadata"
+                    return make_response(jsonify({"message" : message}), status)
+
+                message = print(train_data)
+                return make_response(jsonify({"message" : message}), 200) #200 = success
+
+            except:
+                message = "JSON not correct"
+                return make_response(jsonify({"message" : message}), status)
+        except:
+            message = "cannot read the file"
+            return make_response(jsonify({"message" : message}), status)
+    except:
+        message = "cannot open the file"
+        return make_response(jsonify({"message" : message}), status)
