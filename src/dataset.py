@@ -1,11 +1,12 @@
-"""TrainData : contains information specific to training data"""
+"""Dataset : contains information specific to train/test data"""
 
 import re
 import hashlib
 
-class TrainDataset:
+class Dataset:
     def __init__(self, title="dataset"):
         self.title = title
+        self.file = []
         self.nb_entities = 0
         self.most_common = []
         self.hash = ""
@@ -53,15 +54,16 @@ class TrainDataset:
                 return
             obj = {'text' : text, 'entities' : entities}
             file.append(obj)
-        return file
+        self.file = file
+        return True
     
     
-    def is_correct(self, file):
+    def is_correct(self):
         """checks if the content of the file is correct"""
 
         r_str = "((\"[^\"]+\")|(\'[^\']+\'))"
         r_entity = "\[\d+,\s*\d+,\s*" + r_str + "\]"
-        for obj in file:
+        for obj in self.file:
             entity = obj['entities']
             if not entity :
                 return False
@@ -71,12 +73,12 @@ class TrainDataset:
         return True
     
     
-    def metadata(self, json_file):
+    def metadata(self):
         """completes the object properties to create metadata"""
         
         labels = []
         nb_entities = 0
-        for obj in json_file:
+        for obj in self.file:
             self.nb_entities += len(obj['entities'])
             for e in obj['entities']:
                 labels.append(e[2])
@@ -93,5 +95,5 @@ class TrainDataset:
             self.most_common = label_list[:5]
             
         #MD5 hash - encoded data in hexadecimal format.
-        self.hash = hashlib.md5(str(json_file).encode()).hexdigest()
+        self.hash = hashlib.md5(str(self.file).encode()).hexdigest()
         return True

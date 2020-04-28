@@ -1,7 +1,9 @@
 from flask import render_template, request, make_response, jsonify
 import json
 from app import app
-from train_dataset import TrainDataset
+from dataset import Dataset
+
+train_data = Dataset()
 
 @app.route('/')
 def index():
@@ -32,19 +34,22 @@ def analyse():
         try: 
             content = content.read()
             try:
-                file = json.loads(content)
-                train_data = TrainDataset()
-                data = train_data.filter_json(file)
-                if not file : 
+                content = json.loads(content)
+                global train_data
+                
+                if not train_data.filter_json(content) : 
                     message = "incorrect data structure (1)"
+                    print(message)
                     return make_response(jsonify({"message" : message}), status)
 
-                if not train_data.is_correct(data) :
+                if not train_data.is_correct() :
                     message = "incorrect data structure (2)"
+                    print(message)
                     return make_response(jsonify({"message" : message}), status)
 
-                if not train_data.metadata(data) :
+                if not train_data.metadata() :
                     message = "failed to create metadata"
+                    print(message)
                     return make_response(jsonify({"message" : message}), status)
 
                 message = print(train_data)
@@ -52,10 +57,13 @@ def analyse():
 
             except:
                 message = "JSON not correct"
+                print(message)
                 return make_response(jsonify({"message" : message}), status)
         except:
             message = "cannot read the file"
+            print(message)
             return make_response(jsonify({"message" : message}), status)
     except:
         message = "cannot open the file"
+        print(message)
         return make_response(jsonify({"message" : message}), status)

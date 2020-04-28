@@ -2,10 +2,10 @@
 Benchmark tool - Internship project for TPS students.
 
 ## Settings
-virtualenv benchenv\
-source benchenv/bin/activate\
-pip install -r ./benchmarktool-dev/requirements.txt
+- Open the shell in the folder benchmarktool-dev
+- Run  : ./settings
 
 ## Usage
-Using a terminal in benchmarktool-dev
-- python src/run.py
+- Open the shell in the folder benchmarktool-dev
+- Run  : ./run_script
+
