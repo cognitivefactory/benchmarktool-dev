@@ -1,4 +1,6 @@
-# Importation des packages
+# coding: utf-8
+
+""" spacy_training : train a model using spaCy """
 
 from __future__ import unicode_literals, print_function
 import plac #  wrapper over argparse
@@ -11,53 +13,21 @@ from spacy import displacy
 from spacy.gold import GoldParse
 from spacy.scorer import Scorer
 
-# Liste des entités que l'on voudra reconnaitre
-LABEL = 'ANIMAL'
-
-# Jeu d'entrainement 
-
-TRAIN_DATA = [
-    ("Quel beau cheval!", {
-        'entities': [(10, 16, 'ANIMAL')]
-    }),
-
-    ("Le cheval.", {
-        'entities': [(3, 9, 'ANIMAL')]
-    }),
-
-    ("Cheval blanc, cheval noir.", {
-        'entities': [(0, 6, 'ANIMAL'),(14, 20, 'ANIMAL')]
-    }),
-
-    ("J'aime les chevaux.", {
-        'entities': [(11, 17, 'ANIMAL')]
-    }),
-
-    ("Le cheval ne vaut pas l'avoine.", {
-        'entities': [(3, 9, 'ANIMAL')]
-    }),
-    ("Monte sur ton cheval le plus noble.", {
-        'entities': [(14, 20, 'ANIMAL')]
-    }),
-    ("Bride de cheval ne va pas à un âne..", {
-        'entities': [(9, 15, 'ANIMAL'),(31, 34, 'ANIMAL')]
-    }),
-    ("On connaît le cheval en chemin, et le cavalier à l'auberge.", {
-        'entities': [(14, 20, 'ANIMAL')]
-    })
-    
-]
-
-# Choix des paramètres
-
-model = None# Si model = None alors nouveau modèle 
-model_name = "Animal"# Nom du modèle
-out_dir = None # répertoire où sauvegarder le modèle
-nb_iter = 15 # nombre d'itérations
-
-params = (model, model_name,TRAIN_DATA, LABEL, out_dir, nb_iter)
+def convert_format(json_file):
+    """Convert JSON file to the format required to train a model using spaCy"""
+        data = []
+        for obj in json_file :
+            entities = []
+            for e in obj['entities'] :
+                entities.append(tuple(e))
+                
+            if entities :
+                data.append((obj['text'], {'entities' : entities}))
+        return data
 
 class Spacy_Model:
+    """Class to train/test a model using spaCy"""
+    
     def __init__(self,model,model_name, training_data,labels,out_dir, nb_iter):
         self.model_name = model_name
         self.nb_iter = nb_iter
@@ -77,25 +47,13 @@ class Spacy_Model:
         else:
             self.ner = nlp.get_pipe('ner')
             
-        self.ner.add_label(labels)
+        for l in labels :
+            self.ner.add_label(l)
         if model is None:
             self.optimizer = self.nlp.begin_training()
         else:
             self.optimizer = self.nlp.entity.create_optimizer()
-            
-    def convert(self,data)
-        spacyFormat = []
-        lenData = len(data)
-        lenEntities = 0
-
-        #parsing the file & checking if it's correct
-        for i in range(lenData):
-            lenEntities = len(data[i]["entities"])
-            for j in range(lenEntities):
-                newDict ={}
-                newDict['entities'] = [(data[i]["entities"][j][0], data[i]["entities"][j][1], data[i]["entities"][j][2])]
-                spacyFormat.append((data[i]["text"], newDict))
-        return spacyFormat
+      
             
     def train(self):
         other_pipes = [pipe for pipe in self.nlp.pipe_names if pipe != 'ner']
@@ -123,34 +81,30 @@ class Spacy_Model:
             scorer.score(pred_value, gold)
         return scorer.scores
 
-# Création du modèle
+"""
+LABELS = [label[1] for label in train.get_labels()] 
+TRAIN_DATA = convert_format(train.get_content())
+
+#Parameters
+model = None# None : to create a new model
+model_name = "Animal" 
+out_dir = None #where to save the model
+nb_iter = 15 
+
+params = (model, model_name,TRAIN_DATA, LABEL, out_dir, nb_iter)
 model = Model(model, model_name,TRAIN_DATA, LABEL, out_dir, nb_iter)
-
-#Entrainement du modèle
 model.train()
-
-# Test du modèle:
-test_text = ("On dit qu\'un cheval est calme lorsqu'il limite l\'emploi de ses forces aux exigences de son cavalier. "
-            "Tout travail entreprit sur un cheval irrité, impatient, inquiet, préoccupé de ce qui l\'entoure ou en crainte "
-            "de son cavalier, ne peut être que mauvais. Le calme n\'est donc pas comparable à de"
-            "l\'apathie et n'est pas le propre des chevaux manquant d\'influx nerveux. Un cheval endormi n\'est pas "
-            "nécessairement un cheval calme et la résignation du cheval recherchée quelques fois par la mise en œuvre "
-            "de procédures brutales n\'est pas non plus une source de calme. On a trop tendance à associer le calme à un "
-            "\'manque de vie\', voire un obstacle à la performance sportive. C\'est tout le contraire, un cheval calme est "
-            "vivant, réactif et ordonné.")
-
-doc= model.test(test_text)
-
-examples = [("On dit qu\'un cheval est calme",{
+test = [("On dit qu\'un cheval est calme",{
             'entities': [(13, 19, 'ANIMAL')]
             }),
             ("Un cheval endormi n\'est pas nécessairement un zèbre calme",{
              'entities': [(3, 9, 'ANIMAL'),(46,51, 'ANIMAL')]   
             })
            ]
-res = model.evaluate(examples)
+res = model.evaluate(test)
 
 #ents_p = entities_precision
 #ents_r = entities_recall
 #ents_f = entities_f_score
 print("precision : {}, recall : {}, f_score : {}".format(res['ents_p'],res['ents_r'], res['ents_f']))
+"""
