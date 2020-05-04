@@ -1,0 +1,67 @@
+.train{
+  width: 100%;
+  margin: 1.5rem 0;
+}
+
+.train *{
+  background-color: #6d6a67;
+  color: white;
+  margin-left: 1rem;
+  padding: 0.5rem;
+  width: 10rem;
+  height: 10rem;
+  font-size: 1.2rem;
+  text-align: center;
+  justify-content: center;
+  align-items: center;
+}
+.train :first-child{
+  margin-left: 0;
+}
+.train > .add{
+  text-decoration: none;
+  display: inline-block;
+  font-size: 8.5rem;
+  color: white;
+}
+
+.train *:hover{
+  cursor: pointer;
+  background-color: #444443;
+}
+
+#popup-train{
+  display: none;
+}
+
+[popup-name~="popup-train"]>.popup-content{
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+[popup-name~="popup-train"]>.popup-content>h1{
+  font-size: 1.8rem;
+}
+
+[popup-name~="popup-train"]>.popup-content>label{
+    margin-top: 2rem;
+    margin-bottom: 0.8rem;
+    font-size: 1.1rem;
+}
+
+#submit-data{
+  width: 6rem;
+  height: 2.5rem;
+  border: none;
+  font-size: 1.2rem;
+  margin-top: 3rem;
+  border-radius: 1rem;
+  background-color: darkgray;
+  color: white;
+}
+
+#submit-data:hover{
+  cursor: pointer;
+  background-color: var(--main-bg-color);
+}
