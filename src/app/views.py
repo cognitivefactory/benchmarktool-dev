@@ -1,9 +1,12 @@
 from flask import render_template, request, make_response, jsonify
-import json
 from app import app
+from flask_socketio import SocketIO
+
+import json
 from dataset import Dataset
 
 train_data = Dataset()
+socketio = SocketIO(app, async_mode=None, logger=True, engineio_logger=True)
 
 @app.route('/')
 def index():
@@ -26,8 +29,8 @@ def progression():
     return render_template("progression.html")
 
 
-@app.route('/analyse', methods=['POST'])
-def analyse():
+@app.route('/addTrain', methods=['POST'])
+def addTrain():
     status = 100 # = fail
     try:
         content = request.files['file']
@@ -53,6 +56,7 @@ def analyse():
                     return make_response(jsonify({"message" : message}), status)
 
                 message = print(train_data)
+                
                 return make_response(jsonify({"message" : message}), 200) #200 = success
 
             except:
@@ -67,3 +71,29 @@ def analyse():
         message = "cannot open the file"
         print(message)
         return make_response(jsonify({"message" : message}), status)
+
+'''
+To do :
+in JS : 
+add eventlistener to know when the user wants to train a model
+with socketio, send information as a json 
+
+In Flask :
+@socketio.on('train_model')
+    - handle custom event to retrieve
+    information concerning the model (which library? ...)
+    - inform the client that the training has begun 
+    - train model using train dataset (global var: train)
+    - when it's done socketio.emit
+    
+in JS : create a notification popup when we receive a message from socketio
+'''
+
+#debug
+def messageReceived(methods=['GET', 'POST']):
+    print('message was received!!!')
+
+@socketio.on('my event')
+def handle_my_custom_event(json, methods=['GET', 'POST']):
+    print('received my event: ' + str(json))
+    socketio.emit('my response', json, callback=messageReceived)

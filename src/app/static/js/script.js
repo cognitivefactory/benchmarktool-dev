@@ -31,7 +31,7 @@ jQuery(document).ready(function ($) {
     var fd = new FormData();
     fd.append('file', $('#file-input')[0].files[0]);
 
-    fetch(`/analyse`, {
+    fetch(`/addTrain`, {
       method: 'POST',
       body: fd,
       cache: 'no-cache',

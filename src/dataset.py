@@ -1,14 +1,11 @@
 """Dataset : contains information specific to train/test data"""
 
-import re
-import hashlib
-
 class Dataset:
     def __init__(self, title="dataset"):
         self.title = title
-        self.file = []
+        self.content = []
         self.nb_entities = 0
-        self.most_common = []
+        self.labels = []
         self.hash = ""
         return
         
@@ -26,12 +23,16 @@ class Dataset:
         return self.title
     
     
+    def get_content(self):
+        return self.content
+    
+    
     def get_nb_entities(self):
         return self.nb_entities
     
     
-    def get_most_common(self):
-        return self.most_common
+    def get_labels(self):
+        return self.labels
 
 
     def get_hash(self):
@@ -39,7 +40,7 @@ class Dataset:
     
     
     def filter_json(self, json_file):
-        file = []
+        content = []
         for o in json_file:
             try:
                 text = o['text']
@@ -53,8 +54,8 @@ class Dataset:
             except:
                 return
             obj = {'text' : text, 'entities' : entities}
-            file.append(obj)
-        self.file = file
+            content.append(obj)
+        self.content = content
         return True
     
     
@@ -63,7 +64,7 @@ class Dataset:
 
         r_str = "((\"[^\"]+\")|(\'[^\']+\'))"
         r_entity = "\[\d+,\s*\d+,\s*" + r_str + "\]"
-        for obj in self.file:
+        for obj in self.content:
             entity = obj['entities']
             if not entity :
                 return False
@@ -78,22 +79,18 @@ class Dataset:
         
         labels = []
         nb_entities = 0
-        for obj in self.file:
+        for obj in self.content:
             self.nb_entities += len(obj['entities'])
             for e in obj['entities']:
                 labels.append(e[2])
         
-        #Find most common labels
+        #dictionary of labels ordered by frequency of appearance
         dic = {}
         for word in labels:
             dic.setdefault(word, 0)
             dic[word] += 1
-        label_list = [(dic.get(w), w) for w in dic]
-        if self.nb_entities < 5 : 
-            self.most_common = label_list
-        else:
-            self.most_common = label_list[:5]
+        self.labels = sorted(dic.items() , key = lambda x: x[1], reverse = True)
             
         #MD5 hash - encoded data in hexadecimal format.
-        self.hash = hashlib.md5(str(self.file).encode()).hexdigest()
-        return True
+        self.hash = hashlib.md5(str(self.content).encode()).hexdigest()
+        return self.labels
