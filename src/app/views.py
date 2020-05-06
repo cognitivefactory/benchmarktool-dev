@@ -91,29 +91,15 @@ In Flask :
 in JS : create a notification popup when we receive a message from socketio
 '''
 
-@app.route('/start_training', methods=['POST'])
-def start_training():
-    status = 200 # = success
-    global train_data
-    try:
-        req = request.get_json()
-        print(req['name'])
-        if not train_data :
-            return make_response(jsonify({"state" : 0}), status)
 
-        """here we train the model"""
-        return make_response(jsonify({"state" : 1}), status)
-    except:
-        message = "cannot retrieve the json"
-        print(message)
-        return make_response(jsonify({"message" : message}), status)
-
-
-#debug
-def messageReceived(methods=['GET', 'POST']):
-    print('message was received!!!')
-
-@socketio.on('my event')
+@socketio.on('start_training')
 def handle_my_custom_event(json, methods=['GET', 'POST']):
-    print('received my event: ' + str(json))
-    socketio.emit('my response', json, callback=messageReceived)
+    name = str(json)
+    global train_data
+
+    if not train_data :
+        return socketio.emit('training', 0)
+
+    return socketio.emit('training', 1)
+    
+    """TODO : train the model here"""
