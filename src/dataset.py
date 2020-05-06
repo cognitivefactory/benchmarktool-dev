@@ -76,18 +76,14 @@ class Dataset:
     def metadata(self):
         """completes the object properties to create metadata"""
         
-        labels = []
+        dic = {}
         nb_entities = 0
         for obj in self.file:
             self.nb_entities += len(obj['entities'])
             for e in obj['entities']:
-                labels.append(e[2])
-        
-        #Find most common labels
-        dic = {}
-        for word in labels:
-            dic.setdefault(word, 0)
-            dic[word] += 1
+                dic.setdefault(e[2], 0)
+                dic[e[2]] += 1
+                
         self.most_common = sorted(dic.items() , key = lambda x: x[1], reverse = True)
             
         #MD5 hash - encoded data in hexadecimal format.

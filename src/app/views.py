@@ -56,6 +56,7 @@ def addTrain():
                     return make_response(jsonify({"message" : message}), status)
 
                 message = print(train_data)
+                print(message)
                 
                 return make_response(jsonify({"message" : message}), 200) #200 = success
 
