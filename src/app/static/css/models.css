@@ -1,0 +1,36 @@
+/*Popup-content*/
+
+.popup-content{
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.popup-content>.title{
+    margin: 1rem;
+    font-size: 2.3rem;
+}
+
+.popup-content>.warning{
+    border: 1.5px solid darkgray;
+    padding: 1rem;
+}
+
+#name{
+    margin: 0.4rem 0 0 0;
+}
+
+#submit-start{
+    border: none;
+    font-size: 1.2rem;
+    margin-top: 3rem;
+    border-radius: 1rem;
+    background-color: darkgray;
+    color: white;
+    padding: 0.8rem;
+}
+
+#submit-start:hover{
+  cursor: pointer;
+  background-color: var(--main-bg-color);
+}

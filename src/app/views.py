@@ -5,7 +5,7 @@ from flask_socketio import SocketIO
 import json
 from dataset import Dataset
 
-train_data = Dataset()
+train_data = None
 socketio = SocketIO(app, async_mode=None, logger=True, engineio_logger=True)
 
 @app.route('/')
@@ -29,8 +29,8 @@ def progression():
     return render_template("progression.html")
 
 
-@app.route('/addTrain', methods=['POST'])
-def addTrain():
+@app.route('/add_train', methods=['POST'])
+def add_train():
     status = 100 # = fail
     try:
         content = request.files['file']
@@ -39,7 +39,8 @@ def addTrain():
             try:
                 content = json.loads(content)
                 global train_data
-                
+                train_data = Dataset()
+
                 if not train_data.filter_json(content) : 
                     message = "incorrect data structure (1)"
                     print(message)
@@ -89,6 +90,24 @@ In Flask :
     
 in JS : create a notification popup when we receive a message from socketio
 '''
+
+@app.route('/start_training', methods=['POST'])
+def start_training():
+    status = 200 # = success
+    global train_data
+    try:
+        req = request.get_json()
+        print(req['name'])
+        if not train_data :
+            return make_response(jsonify({"state" : 0}), status)
+
+        """here we train the model"""
+        return make_response(jsonify({"state" : 1}), status)
+    except:
+        message = "cannot retrieve the json"
+        print(message)
+        return make_response(jsonify({"message" : message}), status)
+
 
 #debug
 def messageReceived(methods=['GET', 'POST']):

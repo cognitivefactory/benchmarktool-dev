@@ -40,7 +40,7 @@
   text-align: center;
 }
 
-[popup-name~="popup-train"]>.popup-content>h1{
+[popup-name~="popup-train"]>.popup-content>.title{
   font-size: 1.8rem;
 }
 
@@ -51,8 +51,7 @@
 }
 
 #submit-data{
-  width: 6rem;
-  height: 2.5rem;
+  padding: 0.8rem;
   border: none;
   font-size: 1.2rem;
   margin-top: 3rem;
