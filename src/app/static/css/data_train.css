@@ -30,27 +30,27 @@
   background-color: #444443;
 }
 
-#popup-train{
+#popup_train{
   display: none;
 }
 
-[popup-name~="popup-train"]>.popup-content{
+[popup_name~="popup_train"]>.popup_content{
   flex-direction: column;
   align-items: center;
   text-align: center;
 }
 
-[popup-name~="popup-train"]>.popup-content>.title{
+[popup_name~="popup_train"]>.popup_content>.title{
   font-size: 1.8rem;
 }
 
-[popup-name~="popup-train"]>.popup-content>label{
+[popup_name~="popup_train"]>.popup_content>label{
     margin-top: 2rem;
     margin-bottom: 0.8rem;
     font-size: 1.1rem;
 }
 
-#submit-data{
+#submit_data{
   padding: 0.8rem;
   border: none;
   font-size: 1.2rem;
@@ -60,7 +60,7 @@
   color: white;
 }
 
-#submit-data:hover{
+#submit_data:hover{
   cursor: pointer;
   background-color: var(--main-bg-color);
 }

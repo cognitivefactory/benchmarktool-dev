@@ -10,28 +10,28 @@ jQuery(document).ready(function ($) {
 
   //**Popup */
   //open
-  $('[popup-open]').on('click', function () {
-    var popup_name = $(this).attr('popup-open');
-    $('[popup-name="' + popup_name + '"]').fadeIn(300);
+  $('[popup_open]').on('click', function () {
+    var popup_name = $(this).attr('popup_open');
+    $('[popup_name="' + popup_name + '"]').fadeIn(300);
   });
   //close
-  $('[popup-close]').on('click', function () {
-    var popup_name = $(this).attr('popup-close');
-    $('[popup-name="' + popup_name + '"]').fadeOut(300);
+  $('[popup_close]').on('click', function () {
+    var popup_name = $(this).attr('popup_close');
+    $('[popup_name="' + popup_name + '"]').fadeOut(300);
   });
 
   /////////////
   //// data_train.html
 
   //**Add a file */
-  $('#submit-data').click(function () {
-    content = $('[popup-name="popup-train"] > .popup-content');
+  $('#submit_data').click(function () {
+    content = $('[popup_name="popup_train"] > .popup_content');
     content.children().hide();
     content.append("<h1>Vérification du fichier en cours<h1>");
     content.append("<p>Veuillez patienter quelques instants.</p>")
 
     var fd = new FormData();
-    fd.append('file', $('#file-input')[0].files[0]);
+    fd.append('file', $('#file_input')[0].files[0]);
 
     fetch(`/add_train`, {
       method: 'POST',
@@ -41,7 +41,9 @@ jQuery(document).ready(function ($) {
       //response from views.py
       .then(function (response) {
         if (response.status !== 200) {
-          alert("Incorrect file");
+          content.children().hide();
+          content.append("<h1>Fichier incorrect</h1><p>Veuillez réessayer.</p>");
+          setTimeout(function () { window.location = window.origin + '/data_train'; }, 2000);
           return;
         }
         response.json().then(function (data) {

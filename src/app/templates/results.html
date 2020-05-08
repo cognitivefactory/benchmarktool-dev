@@ -2,6 +2,16 @@
 {% block content %}
 <div class="results">
   <h1>Test de performance</h1>
-  <p>To be continued</p>
+  <h3>visualisation avec displaCy</h3>
+  <p>{{res|markdown}}</p>
+  <table>
+    {% for key, value in score.items() %}
+    <h3>Score par label</h3>
+    <tr>
+      <th> {{ key }} </th>
+      <td> {{ value }} </td>
+    </tr>
+    {% endfor %}
+  </table>
 </div>
 {% endblock %}

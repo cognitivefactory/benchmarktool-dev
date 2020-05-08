@@ -5,11 +5,13 @@ chardet==3.0.4
 click==7.1.1
 cymem==2.0.3
 Flask==1.1.2
+Flask-Markdown==0.3
 Flask-SocketIO==4.3.0
 idna==2.9
 importlib-metadata==1.6.0
 itsdangerous==1.1.0
 Jinja2==2.11.2
+Markdown==3.2.1
 MarkupSafe==1.1.1
 murmurhash==1.0.2
 numpy==1.18.2

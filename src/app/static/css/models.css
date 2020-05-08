@@ -1,17 +1,17 @@
-/*Popup-content*/
+/*popup_content*/
 
-.popup-content{
+.popup_content{
   flex-direction: column;
   align-items: center;
   text-align: center;
 }
 
-.popup-content>.title{
+.popup_content>.title{
     margin: 1rem;
     font-size: 2.3rem;
 }
 
-.popup-content>.warning{
+.popup_content>.warning{
     border: 1.5px solid darkgray;
     padding: 1rem;
 }
@@ -20,7 +20,7 @@
     margin: 0.4rem 0 0 0;
 }
 
-#submit-start{
+#submit_start{
     border: none;
     font-size: 1.2rem;
     margin-top: 3rem;
@@ -30,7 +30,7 @@
     padding: 0.8rem;
 }
 
-#submit-start:hover{
+#submit_start:hover{
   cursor: pointer;
   background-color: var(--main-bg-color);
 }

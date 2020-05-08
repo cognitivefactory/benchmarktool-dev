@@ -324,7 +324,7 @@ nav ul.sub li a:hover { color:var(--main-bg-color); }
 /* POPUP
 ========================================== */
 
-.open-button{
+.open_button{
     color:#FFF;
     background:#0066CC;
     padding:0.625rem;
@@ -333,7 +333,7 @@ nav ul.sub li a:hover { color:var(--main-bg-color); }
     border-radius:0.1875rem;
 }
  
-.open-button:hover{
+.open_button:hover{
     background:#01478e;
 }
  
@@ -347,7 +347,7 @@ nav ul.sub li a:hover { color:var(--main-bg-color); }
     display:none;
 }
  
-.popup-content {
+.popup_content {
     width: 44rem;
     margin: 0 auto;
     box-sizing: border-box;
@@ -359,7 +359,7 @@ nav ul.sub li a:hover { color:var(--main-bg-color); }
     position: relative;
 }
  
-.close-button {
+.close_button {
     width: 2rem;
     height: 2rem;
     position: absolute;
@@ -373,7 +373,7 @@ nav ul.sub li a:hover { color:var(--main-bg-color); }
     text-decoration:none;
 }
  
-.close-button:hover {
+.close_button:hover {
     background: rgba(0,0,0,1);
     cursor: pointer;
 }
