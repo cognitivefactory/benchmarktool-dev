@@ -14,9 +14,9 @@
     {% for key, value in score.items() %}
     <tr>
       <th> {{ key }} </th>
-      <td> précision :{{value["p"]}} </td>
-      <td> f-score : {{ value["f"]}} </td>
-      <td> rappel :{{ value["r"] }} </td>
+      <td> précision : {{value["p"]}} , </td>
+      <td> f-score : {{ value["f"]}} , </td>
+      <td> rappel : {{ value["r"] }} </td>
     </tr>
     {% endfor %}
     {% else %}
