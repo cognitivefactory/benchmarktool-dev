@@ -1,5 +1,6 @@
+
 jQuery(document).ready(function ($) {
-  //**Menu */
+
   $('.burger, .overlay').click(function () {
     $('.burger').toggleClass('clicked');
     $('.overlay').toggleClass('show');
@@ -57,5 +58,4 @@ jQuery(document).ready(function ($) {
         return;
       });
   });
-
 });

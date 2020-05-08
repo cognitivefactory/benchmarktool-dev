@@ -2,6 +2,7 @@
   --main-bg-color: #B7AC7F;
 }
 
+
 .flex{
   display: flex;
 }
@@ -9,6 +10,7 @@
 body{
   font-family: 'Open Sans', sans-serif;
 }
+
 /*  BURGER
 ========================================== */
 
@@ -324,7 +326,9 @@ nav ul.sub li a:hover { color:var(--main-bg-color); }
 /* POPUP
 ========================================== */
 
+
 .open_button{
+
     color:#FFF;
     background:#0066CC;
     padding:0.625rem;
@@ -334,6 +338,7 @@ nav ul.sub li a:hover { color:var(--main-bg-color); }
 }
  
 .open_button:hover{
+
     background:#01478e;
 }
  
@@ -347,6 +352,7 @@ nav ul.sub li a:hover { color:var(--main-bg-color); }
     display:none;
 }
  
+
 .popup_content {
     width: 44rem;
     margin: 0 auto;
@@ -359,23 +365,26 @@ nav ul.sub li a:hover { color:var(--main-bg-color); }
     position: relative;
 }
  
+
 .close_button {
     width: 2rem;
     height: 2rem;
+
     position: absolute;
     top: -0.625rem;
     right: -0.625rem;
     border-radius: 1.25rem;
     background: rgba(0,0,0,0.8);
     font-size: 1.5rem;
+
     text-align: center;
     color: #fff;
     text-decoration:none;
 }
- 
 .close_button:hover {
     background: rgba(0,0,0,1);
     cursor: pointer;
+
 }
  
 

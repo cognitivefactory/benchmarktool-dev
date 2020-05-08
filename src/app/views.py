@@ -1,3 +1,4 @@
+
 from flask import render_template, request, make_response, jsonify
 from app import app
 from flask_socketio import SocketIO
@@ -9,6 +10,7 @@ from model import Model, SpacyModel
 spacy_model = None
 train_data  = None
 socketio    = SocketIO(app, async_mode=None, logger=True, engineio_logger=True)
+
 
 @app.route('/')
 def index():
