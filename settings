@@ -1,0 +1,7 @@
+#!/bin/bash
+
+cd ..
+virtualenv benchenv
+source benchenv/bin/activate
+pip install -r ./benchmarktool-dev/requirements.txt
+
