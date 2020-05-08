@@ -3,10 +3,12 @@ from app import app
 from flask_socketio import SocketIO
 
 import json
-from dataset import Dataset
+from dataset import Dataset, TrainData
+from spacy_model import Spacy_Model
 
-train_data = Dataset()
-socketio = SocketIO(app, async_mode=None, logger=True, engineio_logger=True)
+spacy_model = None
+train_data  = None
+socketio    = SocketIO(app, async_mode=None, logger=True, engineio_logger=True)
 
 @app.route('/')
 def index():
@@ -22,15 +24,30 @@ def models():
 
 @app.route('/results')
 def results():
-    return render_template("results.html")
+    global spacy_model
+ 
+    test_text = [("On dit qu\'un cheval est calme",{
+            'entities': [(13, 19, 'ANIMAL')]
+            }),
+            ("Un cheval endormi n\'est pas nécessairement un zèbre calme",{
+             'entities': [(3, 9, 'ANIMAL'),(46,51, 'ANIMAL')]   
+            })
+           ]
+    score=spacy_model.test(test_text)
+    visuals=spacy_model.get_visuals()
+    for key, value in score.items() :
+        if (key == "ents_per_type"):
+            dict=value
+    #need to send the score for the visualization now.
+    return render_template("results.html", res=visuals,score=dict)
 
 @app.route('/progression')
 def progression():
     return render_template("progression.html")
 
 
-@app.route('/addTrain', methods=['POST'])
-def addTrain():
+@app.route('/add_train', methods=['POST'])
+def add_train():
     status = 100 # = fail
     try:
         content = request.files['file']
@@ -39,7 +56,8 @@ def addTrain():
             try:
                 content = json.loads(content)
                 global train_data
-                
+                train_data = TrainData("train_data")
+
                 if not train_data.filter_json(content) : 
                     message = "incorrect data structure (1)"
                     print(message)
@@ -55,9 +73,10 @@ def addTrain():
                     print(message)
                     return make_response(jsonify({"message" : message}), status)
 
-                message = print(train_data)
+                print(train_data)
+                print(train_data.get_labels())
                 
-                return make_response(jsonify({"message" : message}), 200) #200 = success
+                return make_response(jsonify({"message" : "JSON received"}), 200) #200 = success
 
             except:
                 message = "JSON not correct"
@@ -89,11 +108,21 @@ In Flask :
 in JS : create a notification popup when we receive a message from socketio
 '''
 
-#debug
-def messageReceived(methods=['GET', 'POST']):
-    print('message was received!!!')
 
-@socketio.on('my event')
+@socketio.on('start_training')
 def handle_my_custom_event(json, methods=['GET', 'POST']):
-    print('received my event: ' + str(json))
-    socketio.emit('my response', json, callback=messageReceived)
+    name = str(json)
+    global train_data
+
+    if not train_data :
+        return socketio.emit('training', 0)
+
+    socketio.emit('training', 1)
+    global spacy_model
+    spacy_model = Spacy_Model(None, name,train_data, ['ANIMAL'], None, 15)
+    spacy_model.convert_format()
+    spacy_model.train()
+    socketio.emit('training_done', 1)
+
+
+    """TODO : train the model here"""

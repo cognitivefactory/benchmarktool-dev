@@ -1,8 +1,7 @@
 #!/bin/bash
 
-mkdir ../benchmarktool
-cd ../benchmarktool
-virtualenv benchenv\
-source benchenv/bin/activate\
+cd ..
+virtualenv benchenv
+source benchenv/bin/activate
 pip install -r ./benchmarktool-dev/requirements.txt
 
