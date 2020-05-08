@@ -86,8 +86,7 @@ class TrainData(Dataset):
             for e in obj['entities']:
                 dic.setdefault(e[2], 0)
                 dic[e[2]] += 1
-                
-        self.labels = sorted(dic.items() , key = lambda x: x[1], reverse = True)
+        self.labels = {k: v for k, v in sorted(dic.items(), key=lambda item: item[1],reverse = True)}        
             
         #MD5 hash - encoded data in hexadecimal format.
         self.hash = hashlib.md5(str(self.file).encode()).hexdigest()

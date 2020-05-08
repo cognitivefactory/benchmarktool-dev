@@ -4,7 +4,7 @@ from flask_socketio import SocketIO
 
 import json
 from dataset import Dataset, TrainData
-from spacy_model import Spacy_Model
+from model import Model, SpacyModel
 
 spacy_model = None
 train_data  = None
@@ -25,21 +25,30 @@ def models():
 @app.route('/results')
 def results():
     global spacy_model
- 
+    if(spacy_model== None):
+        return render_template("results.html", score = None, visuals = None)
+    if (spacy_model.is_ready== False):
+        return render_template("results.html", score = None, visuals = None)    
+    
     test_text = [("On dit qu\'un cheval est calme",{
             'entities': [(13, 19, 'ANIMAL')]
             }),
-            ("Un cheval endormi n\'est pas nécessairement un zèbre calme",{
+            ("Un cheval endormi n\'est pas nécessairement un cheval calme",{
              'entities': [(3, 9, 'ANIMAL'),(46,51, 'ANIMAL')]   
+            }),
+            ("souhaitez vous apprendre à monter à cheval?",{
+             'entities' : [(36,41,'ANIMAL')]
+            }),
+            ("Pour moi les chevaux sont les meilleurs animaux après les chats",{
+             'entities' : [(13,20,'ANIMAL'),(58,63, 'ANIMAL')]
             })
            ]
-    score=spacy_model.test(test_text)
+    score=spacy_model.test(test_text)  
     visuals=spacy_model.get_visuals()
     for key, value in score.items() :
         if (key == "ents_per_type"):
-            dict=value
-    #need to send the score for the visualization now.
-    return render_template("results.html", res=visuals,score=dict)
+            score=value
+            return render_template("results.html", score = score, visuals = visuals) 
 
 @app.route('/progression')
 def progression():
@@ -119,7 +128,7 @@ def handle_my_custom_event(json, methods=['GET', 'POST']):
 
     socketio.emit('training', 1)
     global spacy_model
-    spacy_model = Spacy_Model(None, name,train_data, ['ANIMAL'], None, 15)
+    spacy_model = SpacyModel(name,train_data,15, None, None)
     spacy_model.convert_format()
     spacy_model.train()
     socketio.emit('training_done', 1)
