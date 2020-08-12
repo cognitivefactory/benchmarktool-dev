@@ -1,17 +1,28 @@
 {% extends "layout.html" %}
 {% block content %}
-<div class="results">
+
+<div>
   <h1>Test de performance</h1>
-  <h3>visualisation avec displaCy</h3>
-  <p>{{res|markdown}}</p>
+  {% if visuals %}
+  <h3>Visualisation avec displaCy</h3>
+  <div id="visuals">
+    {% for visual in visuals %}
+    <p>{{visual|markdown}}</p>
+    {% endfor %}
+  </div>
   <table>
-    {% for key, value in score.items() %}
     <h3>Score par label</h3>
+    {% for key, value in score.items() %}
     <tr>
       <th> {{ key }} </th>
-      <td> {{ value }} </td>
+      <td> précision : {{value["p"]}} , </td>
+      <td> f-score : {{ value["f"]}} , </td>
+      <td> rappel : {{ value["r"] }} </td>
     </tr>
     {% endfor %}
-  </table>
+    {% else %}
+    <h3>Les résultats ne sont pas encore prêts</h3>
+    {% endif %}
 </div>
+
 {% endblock %}

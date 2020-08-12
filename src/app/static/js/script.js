@@ -1,5 +1,6 @@
+
 jQuery(document).ready(function ($) {
-  //**Menu */
+
   $('.burger, .overlay').click(function () {
     $('.burger').toggleClass('clicked');
     $('.overlay').toggleClass('show');
@@ -53,9 +54,11 @@ jQuery(document).ready(function ($) {
         })
       })
       .catch((error) => {
-        console.error('Error:', error);
+        //Fixing the error for Chrome users
+        content.children().hide();
+        content.append("<h1>Fichier incorrect</h1><p>Veuillez réessayer.</p>");
+        setTimeout(function () { window.location = window.origin + '/data_train'; }, 2000);
         return;
       });
   });
-
 });

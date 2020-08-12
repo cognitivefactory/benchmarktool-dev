@@ -2,8 +2,6 @@
 {% block content %}
 <div class="models">
   <h1>Modèles disponibles</h1>
-
-  
   <a class="add flex" popup_open="popup_start" href="#">spaCy</a>
   <div class="popup" popup_name="popup_start">
     <div class="popup_content flex">
@@ -11,17 +9,16 @@
       <h1 class="title">spaCy</h1>
       <form action="" method="POST">
         <label>Définir le nom du modèle : </label>
-        <input id="name" placeholder="User Name" />
+        <input id="name" placeholder="nom du modèle" />
         <ul>
           <li>Rapidité : élevée</li>
           <li>Performance : élevée</li>
         </ul>
         <p class="warning">La durée d'entraînement peut varier selon la taille du jeu de données d'entraînement</p>
 
-        <input id="submit_start" type="submit" />
+        <input id="submit_start" type="submit" value="Entrainer" />
       </form>
     </div>
   </div>
-
 </div>
 {% endblock %}
