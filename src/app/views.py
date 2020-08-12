@@ -5,7 +5,7 @@ from flask_socketio import SocketIO
 
 import json
 from dataset import Dataset, TrainData
-from model import Model, SpacyModel
+from model import *
 
 spacy_model = None
 train_data  = None
@@ -102,22 +102,6 @@ def add_train():
         print(message)
         return make_response(jsonify({"message" : message}), status)
 
-'''
-To do :
-in JS : 
-add eventlistener to know when the user wants to train a model
-with socketio, send information as a json 
-
-In Flask :
-@socketio.on('train_model')
-    - handle custom event to retrieve
-    information concerning the model (which library? ...)
-    - inform the client that the training has begun 
-    - train model using train dataset (global var: train)
-    - when it's done socketio.emit
-    
-in JS : create a notification popup when we receive a message from socketio
-'''
 
 
 @socketio.on('start_training')
@@ -128,10 +112,11 @@ def handle_my_custom_event(json, methods=['GET', 'POST']):
     if not train_data :
         return socketio.emit('training', 0)
 
-    socketio.emit('training', 1)
+   
     global spacy_model
-    spacy_model = SpacyModel(name,train_data,15, None, None)
-    spacy_model.convert_format()
+    spacy_model = SpacyModel(model_format = "spacy_format",model_name = name,training_data = train_data, nb_iter=15, out_dir= None, model= None)
+    
+    socketio.emit('training', 1)
     spacy_model.train()
     socketio.emit('training_done', 1)
 

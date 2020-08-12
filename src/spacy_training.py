@@ -28,10 +28,10 @@ def convert_format(json_file):
 class Spacy_Model:
     """Class to train/test a model using spaCy"""
     
-    def __init__(self,model,model_name, training_data,labels,out_dir, nb_iter):
+    def __init__(self,model,model_name, training_file,labels,out_dir, nb_iter):
         self.model_name = model_name
         self.nb_iter = nb_iter
-        self.training_data = training_data
+        self.training_file = training_file
         self.out_dir=out_dir
         if model is not None:
             self.nlp = spacy.load(model)
@@ -59,9 +59,9 @@ class Spacy_Model:
         other_pipes = [pipe for pipe in self.nlp.pipe_names if pipe != 'ner']
         with self.nlp.disable_pipes(*other_pipes):  # only train NER
             for itn in range(self.nb_iter):
-                random.shuffle(self.training_data)
+                random.shuffle(self.training_file)
                 losses = {}
-                for text, annotations in tqdm(self.training_data):
+                for text, annotations in tqdm(self.training_file):
                     self.nlp.update([text], [annotations], sgd=self.optimizer, drop=0.35,
                         losses=losses)
                 print(losses)
