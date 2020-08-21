@@ -9,16 +9,22 @@
     <div class="data flex">bank_annotations</div>
     <a class="add flex" popup_open="popup_train" href="#">+</a>
   </div>
-  
-  <div class="popup" popup_name="popup_train">
-    <div class="popup_content flex">
-      <a class="close_button" popup_close="popup_train" href="#">x</a>
-      <h1>Ajout d'un jeu de données d'entrainement</h1>
-      <label>Sélectionnez le fichier JSON à utiliser</label>
-      <input type="file" id="file_input" name="file">
-      <button id="submit_data">Ajouter</button>
-    </div>
+
+  <div>
+    {% for file in files%}
+        <div>{{file["title"]}}</div>
+        <div>{{file["nb_entities"]}}</div>
+        <div>{{file["labels"]}}</div>
+        {% for i in range(3) %}
+          {% if file["labels"][i] != None %}
+            <div>{{file["labels"][i]}}</div>
+          {% endif %}
+        {% endfor %}
+        
+    {% endfor %}
+      
+        
   </div>
-  
+
 </div>
 {% endblock %}

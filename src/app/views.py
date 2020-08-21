@@ -1,4 +1,4 @@
-
+import os
 from flask import render_template, request, make_response, jsonify
 from app import app
 from flask_socketio import SocketIO
@@ -18,7 +18,33 @@ def index():
 
 @app.route('/data_train')
 def data_train():
-    return render_template("data_train.html")
+    """ parcours des fichiers de métadonnées"""
+    path = "datasets"
+    files = []
+    try:
+        metafiles = os.listdir(path)
+        for metafile in metafiles:
+            try:
+                with open(path + "/" + metafile) as json_file:
+                    data = json.load(json_file)
+                    labels = [None]*3
+                    size = len(data["labels"])
+                    for i in range(3):
+                        if size <= i:
+                            break
+                        else:
+                            labels[i] = (list(data["labels"])[i])
+                    data["labels"] = labels
+
+                    files.append(data)
+
+            except:
+                print("file doesn't exist")
+
+    except:
+        print("directory doesn't exist")
+    
+    return render_template("data_train.html", files = files)
 
 @app.route('/models')
 def models():
@@ -65,7 +91,7 @@ def add_train():
         try: 
             content = content.read()
             try:
-                content = json.loads(content)
+                content = json.load(content)
                 global train_data
                 train_data = TrainData("train_data")
 
