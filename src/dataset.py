@@ -5,20 +5,14 @@
 import json
 import re
 import hashlib
+import random
 
 #### Dataset
 
 class Dataset(object):
     def __init__(self, title):
         self.title = title
-        self.file = []
-    
-    def get_title(self):
-        return self.title
-    
-    def get_file(self):
-        return self.file
-
+        
     def filter_json(self, json_file):
         """keeps only the text elements and entities of the JSON file"""
         file = []
@@ -36,7 +30,9 @@ class Dataset(object):
                 return
             obj = {'text' : text, 'entities' : entities}
             file.append(obj)
-        self.file = file
+        
+        random.shuffle(file)        
+        self.file = file        
         return True
     
     
@@ -68,14 +64,6 @@ class TrainData(Dataset):
         """print(obj)"""
         return 'the dataset "'+ self.title +'" has '+ str(self.nb_entities) +' entities.'
     
-    def get_nb_entities(self):
-        return self.nb_entities
-    
-    def get_labels(self):
-        return self.labels
-    
-    def get_hash(self):
-        return self.hash
     
     def metadata(self):
         """completes the object properties to create metadata"""       
@@ -91,3 +79,16 @@ class TrainData(Dataset):
         #MD5 hash - encoded data in hexadecimal format.
         self.hash = hashlib.md5(str(self.file).encode()).hexdigest()
         return True
+    
+    def create_metafile(self):
+        meta = {}
+        meta['title'] = self.title
+        meta['hash'] = self.hash
+        meta['file'] = self.file
+        meta['nb_entities'] = self.nb_entities
+        meta['labels'] = self.labels
+        #TODO : vérifier si le fichier existe déjà ou non
+        with open("datasets/"+self.title+'.json', 'w') as outfile:
+            json.dump(meta, outfile)
+            return True
+        return False

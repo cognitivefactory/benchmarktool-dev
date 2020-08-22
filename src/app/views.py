@@ -4,7 +4,7 @@ from app import app
 from flask_socketio import SocketIO
 
 import json
-from dataset import Dataset, TrainData
+from dataset import *
 from model import *
 
 spacy_model = None
@@ -52,31 +52,66 @@ def models():
 
 @app.route('/results')
 def results():
-    global spacy_model
-    if(spacy_model== None):
-        return render_template("results.html", score = None, visuals = None)
-    if (spacy_model.is_ready== False):
-        return render_template("results.html", score = None, visuals = None)    
-    
-    test_text = [("On dit qu\'un cheval est calme",{
-            'entities': [(13, 19, 'ANIMAL')]
-            }),
-            ("Un cheval endormi n\'est pas nécessairement un cheval calme",{
-             'entities': [(3, 9, 'ANIMAL'),(46,51, 'ANIMAL')]   
-            }),
-            ("souhaitez vous apprendre à monter à cheval?",{
-             'entities' : [(36,41,'ANIMAL')]
-            }),
-            ("Pour moi les chevaux sont les meilleurs animaux après les chats",{
-             'entities' : [(13,20,'ANIMAL'),(58,63, 'ANIMAL')]
-            })
-           ]
-    score=spacy_model.test(test_text)  
-    visuals=spacy_model.get_visuals()
-    for key, value in score.items() :
-        if (key == "ents_per_type"):
-            score=value
-            return render_template("results.html", score = score, visuals = visuals) 
+    return render_template("results.html")
+
+@app.route('/processing', methods=['POST'])
+def processing():
+    status = 100 # = fail
+    try:
+        content = request.files['file']
+        try: 
+            #TODO : récupérer le nom du fichier pour nommer l'objet dataset
+            content = content.read()
+            try:
+                content = json.loads(content)
+                global test_data
+                test_data = Dataset("test_data")
+
+                if not test_data.filter_json(content) : 
+                    message = "incorrect test data structure (1)"
+                    print(message)
+                    return make_response(jsonify({"message" : message}), status)
+
+                if not test_data.is_correct() :
+                    message = "incorrect test data structure (2)"
+                    print(message)
+                    return make_response(jsonify({"message" : message}), status)
+                
+                
+                
+                #success
+                global spacy_model
+                if(spacy_model== None):
+                    return render_template("results.html", score = None, visuals = None)
+                if (spacy_model.is_ready== False):
+                    return render_template("results.html", score = None, visuals = None)    
+                
+                
+
+                score=spacy_model.test(test_data)  
+                visuals=spacy_model.get_visuals()
+                for key, value in score.items() :
+                    if (key == "ents_per_type"):
+                        score=value
+                        
+                return make_response(jsonify({"message" : "JSON received"}), 200)
+                """
+                return make_response(jsonify({"message" : "JSON received"}), 200), render_template("results.html", score = score, visuals = visuals) 
+                """
+
+            except:
+                message = "JSON not correct"
+                print(message)
+                return make_response(jsonify({"message" : message}), status)
+        except:
+            message = "cannot read the file"
+            print(message)
+            return make_response(jsonify({"message" : message}), status)
+    except:
+        message = "cannot open the file"
+        print(message)
+        return make_response(jsonify({"message" : message}), status)
+
 
 @app.route('/progression')
 def progression():
@@ -91,7 +126,8 @@ def add_train():
         try: 
             content = content.read()
             try:
-                content = json.load(content)
+                content = json.loads(content)
+                content = content
                 global train_data
                 train_data = TrainData("train_data")
 
@@ -109,10 +145,12 @@ def add_train():
                     message = "failed to create metadata"
                     print(message)
                     return make_response(jsonify({"message" : message}), status)
-
-                print(train_data)
-                print(train_data.get_labels())
                 
+                if not train_data.create_metafile():
+                    message = "failed to create metafile"
+                    print(message)
+                    return make_response(jsonify({"message" : message}), status)
+
                 return make_response(jsonify({"message" : "JSON received"}), 200) #200 = success
 
             except:
@@ -138,13 +176,19 @@ def handle_my_custom_event(json, methods=['GET', 'POST']):
     if not train_data :
         return socketio.emit('training', 0)
 
-   
-    global spacy_model
-    spacy_model = SpacyModel(model_format = "spacy_format",model_name = name,training_data = train_data, nb_iter=15, out_dir= None, model= None)
-    
-    socketio.emit('training', 1)
-    spacy_model.train()
-    socketio.emit('training_done', 1)
+    try:
+        global spacy_model
+        spacy_model = SpacyModel(model_format = "spacy_format",model_name = name,training_data = train_data, nb_iter=15, out_dir= None, model= None)
+        
+        socketio.emit('training', 1)
+        spacy_model.train()
+        socketio.emit('training_done', 1)
 
-
-    """TODO : train the model here"""
+        """
+        global flair_model
+        flair_model = FlairModel(model_format="bio_format", model_name=name, training_data=train_data, nb_iter=2)
+        socketio.emit('training', 1)
+        flair_model.train()
+        """
+    except:
+        return socketio.emit('model', 0)
