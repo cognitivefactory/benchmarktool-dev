@@ -1,34 +1,57 @@
+/*  TRAIN DATASET
+========================================== */
+
 .train{
   width: 100%;
   margin: 1.5rem 0;
 }
 
-.train *{
-  background-color: #6d6a67;
-  color: white;
-  margin-left: 1rem;
-  padding: 0.5rem;
-  width: 10rem;
-  height: 10rem;
-  font-size: 1.2rem;
-  text-align: center;
-  justify-content: center;
-  align-items: center;
-}
 .train :first-child{
   margin-left: 0;
 }
-.train > .add{
-  text-decoration: none;
-  display: inline-block;
-  font-size: 8.5rem;
-  color: white;
+
+.data, .add{
+  flex-direction: column;
+  justify-content: center;
+  border: 1px solid black;
+  width: 10rem;
+  padding: 0.5rem;
+  box-sizing: border-box;
+  margin-left: 0.5rem;
 }
 
-.train *:hover{
-  cursor: pointer;
-  background-color: #444443;
+.data > h1{
+  text-align: center;
+  font-size: 1.2rem;
+  margin: 0;
 }
+
+.labels{
+  width: 100%;
+}
+.labels > p {
+  margin: 0;
+  padding: 0.3rem;
+  background-color: #A7CCC0;
+}
+
+.add{
+  text-decoration: none;
+  display: inline-block;
+  font-size: 7rem;
+  padding: 0;
+  color: black;
+  text-align: center;
+}
+
+.data:hover, .add:hover{
+  cursor: pointer;
+  background-color: #d5d5d4;
+}
+
+
+/*  SUBMIT DATA POPUP
+========================================== */
 
 #popup_train{
   display: none;

@@ -9,71 +9,51 @@ jQuery(document).ready(function ($) {
 
     var fd = new FormData();
     fd.append('file', $('#file_input')[0].files[0]);
-    console.log(popup_name)
+    var page;
     if(popup_name == "popup_train"){
-      fetch(`/add_train`, {
-        method: 'POST',
-        body: fd,
-        cache: 'no-cache',
-      })
-        //response from views.py
-        .then(function (response) {
-          if (response.status !== 200) {
-            content.children().hide();
-            content.append("<h1>Fichier incorrect</h1><p>Veuillez réessayer.</p>");
-            setTimeout(function () { window.location = window.origin + '/data_train'; }, 2000);
-            return;
-          }
-          response.json().then(function (data) {
-            content.children().hide();
-            content.append("<h1>Fichier ajouté<h1>");
-            setTimeout(function () { window.location = window.origin + '/models'; }, 2000);
-          })
-        })
-        .catch((error) => {
-          //Fixing the error for Chrome users
-          content.children().hide();
-          content.append("<h1>Fichier incorrect</h1><p>Veuillez réessayer.</p>");
-          setTimeout(function () { window.location = window.origin + '/data_train'; }, 2000);
-          return;
-        });
+      page = `/add_train`
     }else{
-      if(popup_name == "popup_test"){
-        fetch(`/processing`, {
-          method: 'POST',
-          body: fd,
-          cache: 'no-cache',
-        })
-          //response from views.py
-          .then(function (response) {
-            if (response.status !== 200) {
-              content.children().hide();
-              content.append("<h1>Fichier incorrect</h1><p>Veuillez réessayer.</p>");
-              setTimeout(function () { window.location = window.origin + '/results'; }, 2000);
-              return;
-            }
-            response.json().then(function (data) {
-              content.children().hide();
-              content.append("<h1>Fichier ajouté<h1>");
-              setTimeout(function () { window.location = window.origin + '/results'; }, 2000);
-              return true;
-            })
-          })
-          .catch((error) => {
-            //Fixing the error for Chrome users
-            content.children().hide();
-            content.append("<h1>Fichier incorrect</h1><p>Veuillez réessayer.</p>");
-            setTimeout(function () { window.location = window.origin + '/results'; }, 2000);
-            return;
-          });
-      }
-      else{
+      page = `/processing`
+    }
+      
+    fetch(page, {
+      method: 'POST',
+      body: fd,
+      cache: 'no-cache',
+    })
+    //response from views.py
+    .then(function (response) {
+      if (response.status !== 200) {
         content.children().hide();
-        content.append("<h1>Problème popup</h1><p>Veuillez réessayer.</p>");
-        setTimeout(function () { window.location = window.origin + '/results'; }, 2000);
+        content.append("<h1>Fichier incorrect</h1><p>Veuillez réessayer.</p>");
+        if(popup_name == "popup_train"){
+          setTimeout(function () { window.location = window.origin + '/data_train'; }, 2000);
+        }else{
+          setTimeout(function () { window.location = window.origin + '/results'; }, 2000);
+        }            
         return;
       }
-    }
+      response.json().then(function (data) {
+        content.children().hide();
+        content.append("<h1>Fichier ajouté<h1>");
+        if(popup_name == "popup_train"){
+          setTimeout(function () { window.location = window.origin + '/models'; }, 2000);
+        }else{
+          setTimeout(function () { window.location = window.origin + '/results'; }, 2000);
+        }
+      })
+    })
+    .catch((error) => {
+      //Fixing the error for Chrome users
+      content.children().hide();
+      content.append("<h1>Fichier incorrect</h1><p>Veuillez réessayer.</p>");
+      if(popup_name == "popup_train"){
+        setTimeout(function () { window.location = window.origin + '/data_train'; }, 2000);
+      }else{
+        setTimeout(function () { window.location = window.origin + '/results'; }, 2000);
+      }
+      return;
+    });
   };
 
 
