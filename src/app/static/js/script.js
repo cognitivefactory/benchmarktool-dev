@@ -1,4 +1,7 @@
 jQuery(document).ready(function ($) {
+  var fd, page;
+  var selection, last_select;
+
 
   function submit_file(popup_name) {
     content = $('[popup_name="' + popup_name + '"]' + ' > .popup_content');
@@ -7,9 +10,9 @@ jQuery(document).ready(function ($) {
     content.append("<h1>Vérification du fichier en cours<h1>");
     content.append("<p>Veuillez patienter quelques instants.</p>")
 
-    var fd = new FormData();
+    fd = new FormData();
     fd.append('file', $('#file_input')[0].files[0]);
-    var page;
+
     if(popup_name == "popup_train"){
       page = `/add_train`
     }else{
@@ -75,8 +78,21 @@ jQuery(document).ready(function ($) {
   //close
   $('[popup_close]').on('click', function () {
     var popup_name = $(this).attr('popup_close');
+
     $('[popup_name="' + popup_name + '"]').fadeOut(300);
+
+    //hide selected library (models.html)
+    if(last_select){
+      setTimeout(function(){ 
+        last_select.hide();
+      $('#libraries').val("A définir");
+      }, 300);
+    }
+
   });
+
+
+
 
   /////////////
   //// Submit a file : train and test files
@@ -88,15 +104,14 @@ jQuery(document).ready(function ($) {
 
   /////////////
   //// Select library
-  var selection;
-  var last_select;
+  
   $('#libraries').change(function () {
     selection = $('#libraries').val()
     selection = $("#" + selection + "_options");
-    selection.toggle();
     if(last_select){
-      last_select.toggle();
+      last_select.hide();
     }
+    selection.show();
     last_select = selection;
 
   });
