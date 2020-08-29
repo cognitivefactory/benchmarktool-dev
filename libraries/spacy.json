@@ -1,0 +1,12 @@
+{
+    "name" : "spacy",
+    "options" : {
+        "model_name" : "name used to save the model",
+        "nb_iter" : "number of iteration, 10 by default",
+        "out_dir" : "folder where the model is saved"
+    },
+    "technologie" : "Residual Convolutional Neural Networks",
+    "auteur"  : "Matthew Honnibal",
+    "version" : "2.2.4",
+    "date" : "12/03/2020"
+}

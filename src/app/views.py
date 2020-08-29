@@ -48,7 +48,25 @@ def data_train():
 
 @app.route('/models')
 def models():
-    return render_template("models.html")
+    """ parcours des fichiers de métadonnées"""
+    path = "libraries"
+    files = []
+    try:
+        metafiles = os.listdir(path)
+        for metafile in metafiles:
+            try:
+                with open(path + "/" + metafile) as json_file:
+                    data = json.load(json_file)
+
+                    data["options"] = list(map(list, data["options"].items()))
+                    files.append(data)
+
+            except:
+                print("cannot read the metafile")    
+    except:
+        print("directory doesn't exist")
+    
+    return render_template("models.html", files = files)
 
 @app.route('/results')
 def results():
@@ -169,7 +187,11 @@ def add_train():
 
 
 @socketio.on('start_training')
-def handle_my_custom_event(json, methods=['GET', 'POST']):
+def handle_my_custom_event(data, methods=['POST']):
+    print(data)
+    print(data["options"]["library"])
+
+    """
     name = str(json)
     global train_data
 
@@ -184,11 +206,12 @@ def handle_my_custom_event(json, methods=['GET', 'POST']):
         spacy_model.train()
         socketio.emit('training_done', 1)
 
-        """
+        
         global flair_model
         flair_model = FlairModel(model_format="bio_format", model_name=name, training_data=train_data, nb_iter=2)
         socketio.emit('training', 1)
         flair_model.train()
-        """
+        
     except:
         return socketio.emit('model', 0)
+    """

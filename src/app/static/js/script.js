@@ -83,4 +83,25 @@ jQuery(document).ready(function ($) {
   $('#submit_data').click(function () {
     submit_file(popup_name);
   });
+
+
+
+  /////////////
+  //// Select library
+  var selection;
+  var last_select;
+  $('#libraries').change(function () {
+    selection = $('#libraries').val()
+    selection = $("#" + selection + "_options");
+    selection.toggle();
+    if(last_select){
+      last_select.toggle();
+    }
+    last_select = selection;
+
+  });
+  
+
+
+
 });

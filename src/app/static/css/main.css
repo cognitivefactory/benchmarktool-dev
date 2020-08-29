@@ -1,5 +1,13 @@
+html{
+  font-size: 100%;
+}
+
 :root{
   --main-bg-color: #B7AC7F;
+}
+
+.hidden{
+  display: none;
 }
 
 
