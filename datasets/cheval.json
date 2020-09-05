@@ -1,0 +1,1 @@
+{"title": "data", "hash": "00871fc6a260895fd22e3131a6ebb751", "file": [{"text": "Adieu Picotin, murmura-t-il, longue vie au cheval du vent...", "entities": [[43, 49, "ANIMAL"]]}, {"text": "Sur une route escarpee, laisse ton cheval donner le pas.", "entities": [[35, 41, "ANIMAL"]]}], "nb_entities": 3, "labels": {"ANIMAL": 3}}

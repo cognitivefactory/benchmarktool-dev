@@ -1,0 +1,35 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="models">
+  <h1>Modèles disponibles</h1>
+  
+  <a class="add flex" popup_open="popup_start" href="#">+</a>
+  <div class="popup" popup_name="popup_start">
+    <div class="popup_content flex">
+      <a class="close_button" popup_close="popup_start" href="#">x</a>
+      <form action="#" method="POST" id="librairy_form">
+        <label for="libraries">Veuillez sélectionner une librairie : </label>
+        <select name="libraries" id="libraries">
+          <option class="library">A définir</option>
+          {% for file in files %}
+          <option class="library" value={{file["name"]}}>{{file["name"]}}</option>
+          {% endfor %}
+        </select>
+      </form>
+
+      {% for file in files %}
+        <form class="training_form hidden" id={{file["name"] + "_options"}} action="" method="POST">
+          {% for option in file["options"] %}
+          <div class="option">
+            <label id={{file["name"] + "_" + option[0]}}> {{option[0]}} </label>
+            <input placeholder="{{option[0]}}" name="{{option[0]}}"/>
+          </div>
+          {% endfor %}
+          <input id="submit_start" type="submit" value="Entrainer" />
+        </form>
+      {% endfor %}
+
+    </div>
+  </div>
+</div>
+{% endblock %}

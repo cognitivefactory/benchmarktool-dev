@@ -1,0 +1,15 @@
+{
+    "name" : "flair",
+    "options" : {
+        "model_name" : "name used to save the model",
+        "nb_iter" : "number of iteration, 10 by default",
+        "lr" : "learning rate, 0.1 by default", 
+        "batch" : "batch size, 32 by default",
+        "mode" : "cpu or gpu",
+        "out_dir" : "folder where the model is saved"
+    },
+    "technology" : "Bi directional long short term memory",
+    "author"  : "Humboldt University of Berlin",
+    "version" : "0.6",
+    "date" : "17/08/2020"
+}

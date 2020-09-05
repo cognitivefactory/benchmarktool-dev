@@ -1,0 +1,39 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="data_train">
+  <h1 class="title">Données d'entraînement</h1>
+  
+  <p class="warning">Veuillez sélectionner un jeu de données d'entrainement.</p>
+  
+
+  <div class="train flex">
+    {% for file in files%}
+        <div class="data flex">
+          <h1>{{file["title"]}}</h1>
+          <p>{{file["nb_entities"]}} annotations</p>
+          <div class="labels flex">
+            {% for i in range(3) %}
+              {% if file["labels"][i] != None %}
+                <p>{{file["labels"][i]}}</p>
+              {% endif %}
+            {% endfor %}
+          </div>
+        </div>
+    {% endfor %}
+    <a class="add flex" popup_open="popup_train" href="#">+</a>
+  </div>
+  </div>
+
+  <div class="popup" popup_name="popup_train">
+    <div class="popup_content flex">
+      <a class="close_button" popup_close="popup_train" href="#">x</a>
+      <h1>Ajout d'un jeu de données d'entrainement</h1>
+      <label>Sélectionnez le fichier JSON à utiliser</label>
+      <input type="file" id="file_input" name="file">
+      <button id="submit_data">Ajouter</button>
+    </div>
+  </div>
+
+
+</div>
+{% endblock %}
