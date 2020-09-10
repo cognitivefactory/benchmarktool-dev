@@ -26,14 +26,19 @@
     <p>{{visual|markdown}}</p>
     {% endfor %}
   </div>
+  {% endif %}
+  {% if score %}
   <table>
-    <h3>Score par label</h3>
-    {% for key, value in score.items() %}
+    <h3>Score par label et par modèle</h3>
+    {% for key, res in score.items() %}
     <tr>
       <th> {{ key }} </th>
+      {% for key, value in res.items() %}
       <td> précision : {{value["p"]}} , </td>
       <td> f-score : {{ value["f"]}} , </td>
       <td> rappel : {{ value["r"] }} </td>
+      {% endfor %}
+      
     </tr>
     {% endfor %}
     {% else %}

@@ -1,23 +1,6 @@
 jQuery(document).ready(function ($) {
-    /*
-    $(".training_form").submit(function( event ) {
-        event.preventDefault();
-        var data = $(this).serializeArray();
-
-        var obj = new Object();
-        obj["library"] = $(this).attr('id').split("_")[0];
-
-        for (i = 0; i < data.length; i++) { 
-            console.log(data[i]['name']);
-            obj[data[i]['name']] = data[i]['value'];
-        } 
-        console.log(obj);
-    });
-    
-    */
 
     var socket = io.connect('http://' + document.domain + ':' + location.port);
-
 
     socket.on('connect', function () {
 
@@ -44,7 +27,7 @@ jQuery(document).ready(function ($) {
 
 
 
-    //event = training 
+    // event = training 
     socket.on('training', function (msg) {
 
         content = $('[popup_name="popup_start"] > .popup_content');
@@ -60,7 +43,7 @@ jQuery(document).ready(function ($) {
         }
     })
 
-    //event = training_done
+    // event = training_done
     socket.on('training_done', function (msg) {
         alert("entrainement terminé.");
     })

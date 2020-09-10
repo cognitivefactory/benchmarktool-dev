@@ -24,7 +24,7 @@ jQuery(document).ready(function ($) {
       body: fd,
       cache: 'no-cache',
     })
-    //response from views.py
+    // response from views.py
     .then(function (response) {
       if (response.status !== 200) {
         content.children().hide();
@@ -47,7 +47,7 @@ jQuery(document).ready(function ($) {
       })
     })
     .catch((error) => {
-      //Fixing the error for Chrome users
+      // Fixing the error for Chrome users
       content.children().hide();
       content.append("<h1>Fichier incorrect</h1><p>Veuillez réessayer.</p>");
       if(popup_name == "popup_train"){
@@ -69,19 +69,19 @@ jQuery(document).ready(function ($) {
 
 
   //**Popup */
-  //open
+  // open
   var popup_name = ""
   $('[popup_open]').on('click', function () {
     popup_name = $(this).attr('popup_open');
     $('[popup_name="' + popup_name + '"]').fadeIn(300);
   });
-  //close
+  // close
   $('[popup_close]').on('click', function () {
     var popup_name = $(this).attr('popup_close');
 
     $('[popup_name="' + popup_name + '"]').fadeOut(300);
 
-    //hide selected library (models.html)
+    // hide selected library (models.html)
     if(last_select){
       setTimeout(function(){ 
         last_select.hide();
@@ -115,8 +115,5 @@ jQuery(document).ready(function ($) {
     last_select = selection;
 
   });
-  
-
-
 
 });

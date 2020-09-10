@@ -6,7 +6,7 @@ from pathlib import Path
 from dataset import *
 
 
-#spaCy imports
+# spaCy imports
 import spacy
 from tqdm import tqdm # loading bar
 from spacy import displacy
@@ -15,7 +15,7 @@ import random
 from spacy.gold import GoldParse
 
 
-#flair imports
+# flair imports
 from flair.data import Corpus
 from flair.datasets import CSVClassificationCorpus, ColumnCorpus
 from flair.embeddings import WordEmbeddings, FlairEmbeddings, DocumentRNNEmbeddings,DocumentLSTMEmbeddings, BertEmbeddings, StackedEmbeddings, TokenEmbeddings
@@ -25,7 +25,7 @@ from typing import List
 from flair.data import Sentence
 
 def convert_format(dataset, model_format):
-        #spaCy
+        # spaCy
         if model_format == "spacy_format" :
             json_file=dataset.file
             data=[]
@@ -37,9 +37,9 @@ def convert_format(dataset, model_format):
             return data
 
 
-        #flair
+        # flair
         elif model_format == "bio_format":
-            #TODO : vérifier si le fichier existe déjà ou non
+            # TODO : vérifier si le fichier existe déjà ou non
             file = open("src/tmp/format.txt", "w")
             pos_beg = 0
             pos_end = 1
@@ -53,6 +53,7 @@ def convert_format(dataset, model_format):
                 matches = pattern.finditer(obj['text'])
 
                 if not matches:
+                    # TODO : gestion d'erreur
                     print("error")
 
                 for m in matches:
@@ -65,11 +66,11 @@ def convert_format(dataset, model_format):
                         annot_beg = e[0]
                         annot_end = e[1]
                         label = e[2]
-                        #At the beginning of the entity's position
+                        # At the beginning of the entity's position
                         if pos_beg == annot_beg:
                             file.write("B-"+label)
                             
-                        #between the entity's position
+                        # between the entity's position
                         elif pos_beg > annot_beg and pos_end <= annot_end:
                             file.write("I-"+label)
                         else:
@@ -134,7 +135,7 @@ class SpacyModel(Model):
         self.is_ready = True
                 
     def test(self, test_data):
-        #conversion des données
+        # conversion des données
         data = convert_format(dataset=test_data, model_format=self.model_format)
 
 
@@ -147,7 +148,6 @@ class SpacyModel(Model):
             visual = visual.replace("\n\n","\n")
             self.visuals.append(visual)
             scorer.score(pred_value, gold)
-            print(scorer.scores)
         return scorer.scores
    
 
@@ -162,7 +162,7 @@ class SpacyModel(Model):
 
 
 class FlairModel(Model):
-    """Class to train/test a model using flair"""
+    """ Class to train/test a model using flair """
     
     def __init__(self,model_format, model_name, training_data, nb_iter=10, lr=0.1, batch=32, mode='cpu', out_dir=None):
         Model.__init__(self,model_format, model_name, training_data, nb_iter, out_dir)
