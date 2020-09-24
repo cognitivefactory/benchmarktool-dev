@@ -4,7 +4,7 @@ installer flair + mettre à jour requirements'''
 
 from pathlib import Path
 from dataset import *
-
+import os
 
 #spaCy imports
 import spacy
@@ -39,15 +39,17 @@ def convert_format(dataset, model_format):
 
         #flair
         elif model_format == "bio_format":
-            #TODO : vérifier si le fichier existe déjà ou non
-            file = open("src/tmp/format.txt", "w")
+            filepath = "src/tmp/format.txt"
+            if os.path.exists(filepath):
+                os.remove(filepath)
+            file = open(filepath, "w")
             pos_beg = 0
             pos_end = 1
             annot_beg = 0
             annot_end = 1
             label = None
             matches = None
-            json_file=self.training_data.file
+            json_file=dataset.file
             for obj in json_file:
                 pattern = re.compile(r"\w'|\w+|[^\w\s]")
                 matches = pattern.finditer(obj['text'])
@@ -147,7 +149,7 @@ class SpacyModel(Model):
             visual = visual.replace("\n\n","\n")
             self.visuals.append(visual)
             scorer.score(pred_value, gold)
-            #print(scorer.scores)
+            print(scorer.scores)
         return scorer.scores
    
 
@@ -196,11 +198,12 @@ class FlairModel(Model):
                                                 use_crf=True)
         self.trainer = ModelTrainer(tagger, corpus)
         self.trainer.train(self.model_name,learning_rate=self.learning_rate,mini_batch_size=self.batch_size, max_epochs=self.nb_iter,embeddings_storage_mode=self.mode)
-
+        self.is_ready = True
 
 
 
     def test(self, test_data):
+        print(test_data)
         data = convert_format(dataset=test_data, model_format=self.model_format)
 
         model = SequenceTagger.load(self.model_name+'/best-model.pt')
@@ -212,18 +215,11 @@ class FlairModel(Model):
         result, eval_loss = model.evaluate(corpus.test)
         # permet de retourner un dictionnaire de la même forme que celui fourni pas spaCy
         res = result.detailed_results
-        res = res.split('\n')[:][9:-4]
-        res =' '.join(str(res).split())
-        res = res.replace("[\'",'')
-        res = res.replace("\']",'')
-        res = res.replace("', '",'')
-        res = res.split()
-        scores = {}
-        for i in range(0,len(res),5):
-            scores[res[i]] = {}
-            scores[res[i]]['p'] = res[i+1]
-            scores[res[i]]['r'] = res[i+2]
-            scores[res[i]]['f'] = res[i+3]
+        res = res.replace("-", "").split()
+        index_label = res.index('class:') + 1
+        label = res[index_label]
+        s = res[-6:]
+        scores = {label : {'p': s[1], 'r': s[3], 'f': s[5]}}
         return scores
         
 
