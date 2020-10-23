@@ -1,12 +1,12 @@
 {
     "name" : "flair",
     "options" : {
-        "model_name" : "name used to save the model",
-        "nb_iter" : "number of iteration, 10 by default",
-        "lr" : "learning rate, 0.1 by default", 
-        "batch" : "batch size, 32 by default",
-        "mode" : "cpu or gpu",
-        "out_dir" : "folder where the model is saved"
+        "model_name" : ["string", "nom donné pour sauvegarder le modèle", "flairModel"],
+        "nb_iter" : ["int", "nombre d'itérations, par défaut 10", "10"],
+        "lr" : ["float", "learning rate, 0.1 par défaut", "0.1"], 
+        "batch" : ["int", "taille du batch, par défaut 32", "32"],
+        "mode" : ["cpu|gpu", "cpu ou gpu", "cpu"],
+        "out_dir" : ["string", "nombre d'itérations, par défaut 10", "model"]
     },
     "technology" : "Bi directional long short term memory",
     "author"  : "Humboldt University of Berlin",

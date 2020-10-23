@@ -14,7 +14,7 @@ class Dataset(object):
         self.title = title
         
     def filter_json(self, json_file):
-        """keeps only the text elements and entities of the JSON file"""
+        """keeps only the text elements and entities of the JSON file."""
         file = []
         for o in json_file:
             try:
@@ -37,7 +37,7 @@ class Dataset(object):
     
     
     def is_correct(self):
-        """checks if the content of the file is correct"""
+        """checks if the content of the file is correct."""
 
         r_str = "((\"[^\"]+\")|(\'[^\']+\'))"
         r_entity = "\[\d+,\s*\d+,\s*" + r_str + "\]"
@@ -66,7 +66,7 @@ class TrainData(Dataset):
     
     
     def metadata(self):
-        """completes the object properties to create metadata"""       
+        """completes the object properties to create metadata."""       
         dic = {}
         nb_entities = 0
         for obj in self.file:
@@ -81,6 +81,7 @@ class TrainData(Dataset):
         return True
     
     def create_metafile(self):
+        """creates a file with the metadata."""
         meta = {}
         meta['title'] = self.title
         meta['hash'] = self.hash

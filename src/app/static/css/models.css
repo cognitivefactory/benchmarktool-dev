@@ -1,29 +1,74 @@
-/*popup_content*/
+/*  Form
+========================================== */
+#library_form>label{
+  font-size: 1.2rem;
+  margin-bottom: 1rem;
+}
 
-.popup_content{
+.popup_training{
   flex-direction: column;
   align-items: center;
+  width: 35rem;
+}
+
+
+.training_form{
+  width: 100%;
+  overflow: auto;
+}
+
+.option{
+  justify-content: space-between;
+  flex-direction: column;
+  margin: 0;
+}
+
+.input_container{
+  align-items: center;
+  flex-wrap: nowrap;
+}
+
+.input_info{
+  width: 1.2rem;
+  height: 1.2rem;
+  background-color: #555454;
+  color: white;
+  inline-size: 1.2rem;
+  align-self: center;
+  border-radius: 1.2rem;
   text-align: center;
+  line-height: 1.2rem;
+  font-weight: bold;
+  margin-left: 0.5rem;  
 }
 
-.popup_content>.title{
-    margin: 1rem;
-    font-size: 2.3rem;
+.input_info:hover{
+  cursor: pointer;
 }
 
-.popup_content>.warning{
-    border: 1.5px solid darkgray;
-    padding: 1rem;
+.input_info_container{
+  font-size: 0.9rem;
+  margin: 0;
+  margin-left: 0.5rem;
+  background-color: #555;
+  color: white;
+  padding: 0.5rem;
+  height: 100%;
+  border-radius: 0.5rem;
+  opacity: 0.80;
 }
 
-#name{
-    margin: 0.4rem 0 0 0;
+.input_error{
+  color: #d52121;
+  font-size: 0.85rem;
+  margin-top: 0;
+  margin-bottom: 1rem;
 }
 
 #submit_start{
+  margin-top: 1rem;
     border: none;
     font-size: 1.2rem;
-    margin-top: 3rem;
     border-radius: 1rem;
     background-color: darkgray;
     color: white;

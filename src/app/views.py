@@ -29,7 +29,8 @@ def data_train():
                 with open(path + "/" + metafile) as json_file:
                     data = json.load(json_file)
 
-                    # récupération des 3 labels les plus présents
+                    # only display the 3 most frequent labels
+                    # stored in a list to be displayed using Jinja
                     labels = [None]*3
                     size = len(data["labels"])
                     for i in range(3):
@@ -51,7 +52,7 @@ def data_train():
 
 @app.route('/models')
 def models():
-    """ parcours des fichiers d'informations de chaque librairie"""
+    """ parcours des fichiers de métadonnées"""
     path = "libraries"
     files = []
     try:
@@ -61,6 +62,8 @@ def models():
                 with open(path + "/" + metafile) as json_file:
                     data = json.load(json_file)
 
+                    # convert dictionnary to list
+                    # format : [['key'], values]
                     data["options"] = list(map(list, data["options"].items()))
                     files.append(data)
 
@@ -73,12 +76,12 @@ def models():
 
 @app.route('/results')
 def results():
-    """ Gestion  de l'affichage des résultats """
     global test_data
     global models_list
+    print(models_list)
+    print(f"jeu de test = {test_data}")
 
-    # TODO : distinction des cas
-    if (test_data==None or models_list == None ):
+    if (test_data==None or models_list == [] ):
         return render_template("results.html",score = None, visuals = None)
     else:
         print(models_list)
@@ -86,18 +89,22 @@ def results():
         for model in models_list:
             if (model.is_ready== True):
                 scores=model.test(test_data)  
-                visuals=model.get_visuals()
-                for key, value in scores.items() :
-                    if (key == "ents_per_type"):
-                        scores=value
-                        score[model.model_name] = scores
+                if(model.model_format=="spacy_format"):
+                    for key, value in scores.items() :
+                        if (key == "ents_per_type"):
+                            scores=value
+                            score[model.model_name] = scores
+                if(model.model_format=="bio_format"):
+                    score[model.model_name] = scores
         print(score)
+        #return render_template("results.html", score = score, visuals = visuals)
         return render_template("results.html", score = score, visuals = None)
+    #return render_template("results.html",score = None, visuals = None)
+
             
 
 @app.route('/processing', methods=['POST'])
 def processing():
-    """ Gestion du parsing du fichier de test """
     status = 100 # = fail
     try:
         content = request.files['file']
@@ -118,7 +125,11 @@ def processing():
                     message = "incorrect test data structure (2)"
                     print(message)
                     return make_response(jsonify({"message" : message}), status)
-              
+                
+                
+                
+             
+                        
                 return make_response(jsonify({"message" : "JSON received"}), 200)
 
             except:
@@ -142,7 +153,6 @@ def progression():
 
 @app.route('/add_train', methods=['POST'])
 def add_train():
-    """ Gestion du parsing du fichier d'entrainement """
     status = 100 # = fail
     try:
         content = request.files['file']
@@ -150,6 +160,7 @@ def add_train():
             content = content.read()
             try:
                 content = json.loads(content)
+                content = content
                 global train_data
                 train_data = TrainData("train_data")
 
@@ -192,10 +203,9 @@ def add_train():
 
 @socketio.on('start_training')
 def handle_my_custom_event(data, methods=['POST']):
-    """ Lancement de l'entraînement d'un modèle """
     print(data)
-    library = data["options"]["library"]
 
+    library = data["options"]["library"]
     try:
         global models_list
         global train_data
@@ -203,9 +213,8 @@ def handle_my_custom_event(data, methods=['POST']):
         if not train_data :
             return socketio.emit('training', 0)
 
-        # TODO: automatiser l'appel des modèles
+            #TODO: automatiser l'appel des modèles
         if(library == "spacy"):
-            
             model = SpacyModel(model_format = "spacy_format",model_name = data["options"]["model_name"],training_data = train_data, nb_iter=eval(data["options"]["nb_iter"]), out_dir=data["options"]["out_dir"], model= None)
             models_list.append(model)
             socketio.emit('training', 1)
@@ -213,12 +222,19 @@ def handle_my_custom_event(data, methods=['POST']):
             socketio.emit('training_done', 1)
 
         if(library == "flair"):
+            print(data["options"]["model_name"])
+            print(train_data)
+            print(eval(data["options"]["nb_iter"]))
+            print(eval(data["options"]["lr"]))
+            print(eval(data["options"]["batch"]))
+            print(data["options"]["mode"])
+            print(data["options"]["out_dir"])
             model = FlairModel(model_format="bio_format", model_name=data["options"]["model_name"], training_data=train_data, nb_iter=eval(data["options"]["nb_iter"]),lr=eval(data["options"]["lr"]), batch=eval(data["options"]["batch"]), mode=data["options"]["mode"], out_dir=data["options"]["out_dir"])
             models_list.append(model)
             socketio.emit('training', 1)
+            print(model)
             model.train()
             socketio.emit('training_done', 1)
 
     except:
         return socketio.emit('model', 0)
-        

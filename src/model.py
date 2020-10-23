@@ -1,12 +1,9 @@
-''' changer chemins relatifs flair
-installer flair + mettre à jour requirements'''
-
 
 from pathlib import Path
 from dataset import *
+import os
 
-
-# spaCy imports
+#spaCy imports
 import spacy
 from tqdm import tqdm # loading bar
 from spacy import displacy
@@ -15,7 +12,7 @@ import random
 from spacy.gold import GoldParse
 
 
-# flair imports
+#flair imports
 from flair.data import Corpus
 from flair.datasets import CSVClassificationCorpus, ColumnCorpus
 from flair.embeddings import WordEmbeddings, FlairEmbeddings, DocumentRNNEmbeddings,DocumentLSTMEmbeddings, BertEmbeddings, StackedEmbeddings, TokenEmbeddings
@@ -25,7 +22,7 @@ from typing import List
 from flair.data import Sentence
 
 def convert_format(dataset, model_format):
-        # spaCy
+        #spaCy
         if model_format == "spacy_format" :
             json_file=dataset.file
             data=[]
@@ -37,23 +34,24 @@ def convert_format(dataset, model_format):
             return data
 
 
-        # flair
+        #flair
         elif model_format == "bio_format":
-            # TODO : vérifier si le fichier existe déjà ou non
-            file = open("src/tmp/format.txt", "w")
+            filepath = "src/tmp/format.txt"
+            if os.path.exists(filepath):
+                os.remove(filepath)
+            file = open(filepath, "w")
             pos_beg = 0
             pos_end = 1
             annot_beg = 0
             annot_end = 1
             label = None
             matches = None
-            json_file=self.training_data.file
+            json_file=dataset.file
             for obj in json_file:
                 pattern = re.compile(r"\w'|\w+|[^\w\s]")
                 matches = pattern.finditer(obj['text'])
 
                 if not matches:
-                    # TODO : gestion d'erreur
                     print("error")
 
                 for m in matches:
@@ -66,11 +64,11 @@ def convert_format(dataset, model_format):
                         annot_beg = e[0]
                         annot_end = e[1]
                         label = e[2]
-                        # At the beginning of the entity's position
+                        #At the beginning of the entity's position
                         if pos_beg == annot_beg:
                             file.write("B-"+label)
                             
-                        # between the entity's position
+                        #between the entity's position
                         elif pos_beg > annot_beg and pos_end <= annot_end:
                             file.write("I-"+label)
                         else:
@@ -80,7 +78,7 @@ def convert_format(dataset, model_format):
                 file.write("\n")
 
             file.close()
-            return "src/tmp/format.txt"
+            return filepath
         
 
 
@@ -135,7 +133,7 @@ class SpacyModel(Model):
         self.is_ready = True
                 
     def test(self, test_data):
-        # conversion des données
+        #conversion des données
         data = convert_format(dataset=test_data, model_format=self.model_format)
 
 
@@ -148,6 +146,7 @@ class SpacyModel(Model):
             visual = visual.replace("\n\n","\n")
             self.visuals.append(visual)
             scorer.score(pred_value, gold)
+            print(scorer.scores)
         return scorer.scores
    
 
@@ -162,7 +161,7 @@ class SpacyModel(Model):
 
 
 class FlairModel(Model):
-    """ Class to train/test a model using flair """
+    """Class to train/test a model using flair"""
     
     def __init__(self,model_format, model_name, training_data, nb_iter=10, lr=0.1, batch=32, mode='cpu', out_dir=None):
         Model.__init__(self,model_format, model_name, training_data, nb_iter, out_dir)
@@ -196,11 +195,12 @@ class FlairModel(Model):
                                                 use_crf=True)
         self.trainer = ModelTrainer(tagger, corpus)
         self.trainer.train(self.model_name,learning_rate=self.learning_rate,mini_batch_size=self.batch_size, max_epochs=self.nb_iter,embeddings_storage_mode=self.mode)
-
+        self.is_ready = True
 
 
 
     def test(self, test_data):
+        print(test_data)
         data = convert_format(dataset=test_data, model_format=self.model_format)
 
         model = SequenceTagger.load(self.model_name+'/best-model.pt')
@@ -212,18 +212,11 @@ class FlairModel(Model):
         result, eval_loss = model.evaluate(corpus.test)
         # permet de retourner un dictionnaire de la même forme que celui fourni pas spaCy
         res = result.detailed_results
-        res = res.split('\n')[:][9:-4]
-        res =' '.join(str(res).split())
-        res = res.replace("[\'",'')
-        res = res.replace("\']",'')
-        res = res.replace("', '",'')
-        res = res.split()
-        scores = {}
-        for i in range(0,len(res),5):
-            scores[res[i]] = {}
-            scores[res[i]]['p'] = res[i+1]
-            scores[res[i]]['r'] = res[i+2]
-            scores[res[i]]['f'] = res[i+3]
+        res = res.replace("-", "").split()
+        index_label = res.index('class:') + 1
+        label = res[index_label]
+        s = res[-6:]
+        scores = {label : {'p': s[1], 'r': s[3], 'f': s[5]}}
         return scores
         
 

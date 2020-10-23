@@ -1,11 +1,11 @@
 {
     "name" : "spacy",
     "options" : {
-        "model_name" : "name used to save the model",
-        "nb_iter" : "number of iteration, 10 by default",
-        "out_dir" : "folder where the model is saved"
+        "model_name" : ["string", "nom donné pour sauvegarder le modèle", "spacyModel"],
+        "nb_iter" : ["int", "nombre d'itérations, par défaut 10", "10"],
+        "out_dir" : ["string", "dossier dans lequel le modèle sera sauvegardé", "model"]
     },
-    "technologie" : "Residual Convolutional Neural Networks",
+    "technologie" : "Réseau de neurones convolutif",
     "auteur"  : "Matthew Honnibal",
     "version" : "2.2.4",
     "date" : "12/03/2020"
