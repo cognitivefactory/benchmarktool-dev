@@ -87,12 +87,21 @@ jQuery(document).ready(function ($) {
     
                         case "boolean":
                             //console.log(value + "s hould be a boolean");
-
+                            value = value.toLowerCase();
                             if(value != "true" && value != "false"){
                                 //console.log("not equal true or false");
 
                                 input_correct = false;
                                 form_correct = false;
+                            }
+                            else{
+                                if(value=="true"){
+                                    value = true;
+                                }
+                                else{
+                                    value = false;
+                                }
+                                
                             }
                         break;
     
