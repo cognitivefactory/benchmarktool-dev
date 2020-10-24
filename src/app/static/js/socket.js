@@ -15,11 +15,9 @@ jQuery(document).ready(function ($) {
         for (i = 0; i < form_inputs.length; i++) {
             input_correct = true;
             value = form_inputs[i]['value'].trim();
-            console.log(value+"----------");
 
-            //empty value
             if(value.length==0){
-                console.log("empty value");
+                //console.log("empty value");
                 input_correct = false;
                 form_correct = false;
             }
@@ -31,9 +29,8 @@ jQuery(document).ready(function ($) {
                 //if the input value needs to be a specified values
                 if(input_valid_values.length !== 1){
     
-                    //if value not in the list of specified values
                     if(input_valid_values.indexOf(value) == -1){
-                        console.log("not in the list of specified values");
+                        //console.log("if value not in the list of specified values");
                         input_correct = false;
                         form_correct = false;
                     }
@@ -44,14 +41,14 @@ jQuery(document).ready(function ($) {
                         //if int or float
                         case("int"):
                         case("float"):
-                            console.log(value + "should be a number");
+                            //console.log(value + " should be a number");
                             /*
                                 +value==+value :
                                 returns true if the string is a valid number
                                 ex : "12" -> true, "test" -> false, 12 -> true
                             */
                             if(!(+value==+value)){
-                                console.log("not a number");
+                                //console.log("not a number");
                                 input_correct = false;
                                 form_correct = false;
                             }
@@ -61,7 +58,7 @@ jQuery(document).ready(function ($) {
 
                                 //if value == float
                                 if(number%1 != 0){
-                                    console.log("not an int");
+                                    //console.log("not an int");
                                     input_correct = false;
                                     form_correct = false;
                                 }
@@ -79,20 +76,20 @@ jQuery(document).ready(function ($) {
                             
     
                         case "string":
-                            console.log(value + "should be a string");
+                            //console.log(value + " should be a string");
 
                             if(+value==+value){
-                                console.log("value == number");
+                                //console.log("value == number");
                                 input_correct = false;
                                 form_correct = false;
                             }
                         break;
     
                         case "boolean":
-                            console.log(value + "should be a boolean");
+                            //console.log(value + "s hould be a boolean");
 
                             if(value != "true" && value != "false"){
-                                console.log("not equal true or false");
+                                //console.log("not equal true or false");
 
                                 input_correct = false;
                                 form_correct = false;
@@ -145,12 +142,9 @@ jQuery(document).ready(function ($) {
                       
             
             if(obj != false){
-                console.log("END------------");
-                /*
                 socket.emit('start_training', {
                     options:obj,
                 })
-                */
             }else{
                 console.log("error");
             }
@@ -163,6 +157,7 @@ jQuery(document).ready(function ($) {
 
     //event = training 
     socket.on('training', function (msg) {
+        console.log('-----training');
 
         content = $('[popup_name="popup_start"] > .popup_content');
         content.children().hide();

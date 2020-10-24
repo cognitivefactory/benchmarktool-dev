@@ -84,31 +84,36 @@ def convert_format(dataset, model_format):
 
 
 class Model(object):
-    def __init__(self, model_format, model_name, training_data, nb_iter, out_dir):
-        self.model_name = model_name
-        self.nb_iter = nb_iter
-        self.training_data = training_data
-        self.out_dir = out_dir
+    def __init__(self, model_format, parameters):
+        self.model_name = parameters['model_name']
+        self.nb_iter = parameters['nb_iter']
+        self.training_data = parameters['training_data']
+        self.out_dir = parameters['out_dir']
         self.is_ready = False
         self.model_format=model_format.lower()
 
 class SpacyModel(Model):
-    def __init__(self, model_format, model_name, training_data, nb_iter, out_dir,model):
-        Model.__init__(self,model_format, model_name, training_data, nb_iter, out_dir)
+    def __init__(self, model_format, parameters, model=None):
+        Model.__init__(self,
+                        model_format=model_format,
+                        parameters=parameters)
+
         self.visuals = []
+
         if model is not None:
             self.nlp = spacy.load(model)
             print("Loaded model '%s'" % model)
         else:
             self.nlp = spacy.blank('fr')
             print("Created new model")
-            
+
+
         if 'ner' not in self.nlp.pipe_names:
             self.ner = self.nlp.create_pipe('ner')
             self.nlp.add_pipe(self.ner)
         else:
             self.ner = self.nlp.get_pipe('ner')
-        labels = [ label for label in training_data.labels]
+        labels = [ label for label in self.training_data.labels]
         for l in labels :
             self.ner.add_label(l)
         if model is None:
@@ -122,6 +127,7 @@ class SpacyModel(Model):
     def train(self):
         self.training_data = convert_format(dataset=self.training_data, model_format=self.model_format)
         other_pipes = [pipe for pipe in self.nlp.pipe_names if pipe != 'ner']
+        
         with self.nlp.disable_pipes(*other_pipes):
             for itn in range(self.nb_iter):
                 random.shuffle(self.training_data)
@@ -133,7 +139,7 @@ class SpacyModel(Model):
         self.is_ready = True
                 
     def test(self, test_data):
-        #conversion des données
+        # convert data format
         data = convert_format(dataset=test_data, model_format=self.model_format)
 
 
@@ -161,15 +167,16 @@ class SpacyModel(Model):
 
 
 class FlairModel(Model):
-    """Class to train/test a model using flair"""
+    """Class to train/test a model using flair."""
+
     
-    def __init__(self,model_format, model_name, training_data, nb_iter=10, lr=0.1, batch=32, mode='cpu', out_dir=None):
-        Model.__init__(self,model_format, model_name, training_data, nb_iter, out_dir)
-        self.model_name = './'+ model_name
-        self.learning_rate=lr
-        self.batch_size=batch
-        self.mode=mode
-        self.training_data = training_data
+    def __init__(self,model_format, parameters):
+        Model.__init__(self, model_format, parameters)
+        self.model_name = './'+ parameters['model_name']
+        self.learning_rate=parameters['lr']
+        self.batch_size=parameters['batch']
+        self.mode=parameters['mode']
+        self.training_data = parameters['training_data']
         
 
 

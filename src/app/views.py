@@ -203,38 +203,35 @@ def add_train():
 
 @socketio.on('start_training')
 def handle_my_custom_event(data, methods=['POST']):
-    print(data)
+    global models_list
+    global train_data
 
     library = data["options"]["library"]
-    try:
-        global models_list
-        global train_data
 
+    # only keep parameters
+    del data["options"]["library"]
+
+    try:
+        
         if not train_data :
             return socketio.emit('training', 0)
+        else :
+            # add training data to parameters
+            data["options"]["training_data"] = train_data
 
-            #TODO: automatiser l'appel des modèles
+
         if(library == "spacy"):
-            model = SpacyModel(model_format = "spacy_format",model_name = data["options"]["model_name"],training_data = train_data, nb_iter=eval(data["options"]["nb_iter"]), out_dir=data["options"]["out_dir"], model= None)
-            models_list.append(model)
-            socketio.emit('training', 1)
-            model.train()
-            socketio.emit('training_done', 1)
+            print("---spacy")
+            model = SpacyModel(model_format="spacy_format", parameters=data["options"])
 
-        if(library == "flair"):
-            print(data["options"]["model_name"])
-            print(train_data)
-            print(eval(data["options"]["nb_iter"]))
-            print(eval(data["options"]["lr"]))
-            print(eval(data["options"]["batch"]))
-            print(data["options"]["mode"])
-            print(data["options"]["out_dir"])
-            model = FlairModel(model_format="bio_format", model_name=data["options"]["model_name"], training_data=train_data, nb_iter=eval(data["options"]["nb_iter"]),lr=eval(data["options"]["lr"]), batch=eval(data["options"]["batch"]), mode=data["options"]["mode"], out_dir=data["options"]["out_dir"])
-            models_list.append(model)
-            socketio.emit('training', 1)
-            print(model)
-            model.train()
-            socketio.emit('training_done', 1)
+        elif(library == "flair"):
+            print("----flair")
+            model = FlairModel(model_format="bio_format", parameters=data["options"])
+
+        models_list.append(model)
+        socketio.emit("training", 1)
+        model.train()
+        socketio.emit('training_done', 1)
 
     except:
         return socketio.emit('model', 0)
