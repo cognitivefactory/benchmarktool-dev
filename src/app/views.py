@@ -200,9 +200,25 @@ def add_train():
         return make_response(jsonify({"message" : message}), status)
 
 
+@socketio.on('select_train_data')
+def select_train_data(filename, methods=['POST']):
+    global train_data
+
+    try:
+        with open("./datasets/" + filename['filename'], 'r') as file:
+            train_data = TrainData()
+            train_data.from_metadata(json.load(file))
+        
+            socketio.emit('selected_train_data', 1)
+
+    except:
+        socketio.emit('selected_train_data', 0)
+
+
+
 
 @socketio.on('start_training')
-def handle_my_custom_event(data, methods=['POST']):
+def start_training(data, methods=['POST']):
     global models_list
     global train_data
 

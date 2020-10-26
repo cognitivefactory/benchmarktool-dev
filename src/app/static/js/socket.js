@@ -1,16 +1,14 @@
 jQuery(document).ready(function ($) {
 
-    ////////////
-  /// Check training data parameters
-
+    
     function check_training_parameters(form_id, form_inputs){
-
+        
         var value, input_type, input_valid_values, input_correct;
         var form_correct = true;
-
+        
         var obj = new Object();
         obj["library"] = form_id.split("_")[0];
-
+        
         //check each input values
         for (i = 0; i < form_inputs.length; i++) {
             input_correct = true;
@@ -22,13 +20,13 @@ jQuery(document).ready(function ($) {
                 form_correct = false;
             }
             else{
-
+                
                 input_type = $("input[name='"+form_inputs[i]['name']+"'").attr('input_type');
                 input_valid_values = input_type.split("|")
     
                 //if the input value needs to be a specified values
                 if(input_valid_values.length !== 1){
-    
+                    
                     if(input_valid_values.indexOf(value) == -1){
                         //console.log("if value not in the list of specified values");
                         input_correct = false;
@@ -41,68 +39,68 @@ jQuery(document).ready(function ($) {
                         //if int or float
                         case("int"):
                         case("float"):
-                            //console.log(value + " should be a number");
-                            /*
-                                +value==+value :
-                                returns true if the string is a valid number
-                                ex : "12" -> true, "test" -> false, 12 -> true
-                            */
-                            if(!(+value==+value)){
-                                //console.log("not a number");
-                                input_correct = false;
-                                form_correct = false;
-                            }
-                            let number = new Number(value);
+                        //console.log(value + " should be a number");
+                        /*
+                        +value==+value :
+                        returns true if the string is a valid number
+                        ex : "12" -> true, "test" -> false, 12 -> true
+                        */
+                       if(!(+value==+value)){
+                           //console.log("not a number");
+                           input_correct = false;
+                           form_correct = false;
+                        }
+                        let number = new Number(value);
+                        
+                        if(input_type == "int"){
                             
-                            if(input_type == "int"){
-
-                                //if value == float
-                                if(number%1 != 0){
+                            //if value == float
+                            if(number%1 != 0){
                                     //console.log("not an int");
                                     input_correct = false;
                                     form_correct = false;
                                 }
                             }
                             
-                        break;
+                            break;
                             
+                            
+                            case "string":
+                                //console.log(value + " should be a string");
+                                
+                                if(+value==+value){
+                                    //console.log("value == number");
+                                    input_correct = false;
+                                    form_correct = false;
+                                }
+                                break;
+                                
+                                case "boolean":
+                                    //console.log(value + "s hould be a boolean");
+                                    
+                                    if(value != "true" && value != "false"){
+                                        //console.log("not equal true or false");
+                                        
+                                        input_correct = false;
+                                        form_correct = false;
+                                    }
+                                    
+                                    break;
     
-                        case "string":
-                            //console.log(value + " should be a string");
-
-                            if(+value==+value){
-                                //console.log("value == number");
-                                input_correct = false;
-                                form_correct = false;
-                            }
-                        break;
-    
-                        case "boolean":
-                            //console.log(value + "s hould be a boolean");
-
-                            if(value != "true" && value != "false"){
-                                //console.log("not equal true or false");
-
-                                input_correct = false;
-                                form_correct = false;
-                            }
-
-                        break;
-    
-                        default:
-                            input_correct = false;
-                            form_correct = false;
-
-                        break;
-                    }
-                }
-            } 
-
+                                    default:
+                                        input_correct = false;
+                                        form_correct = false;
+                                        
+                                        break;
+                                    }
+                                }
+                            } 
+                            
             if(!input_correct){
                 $('#' + form_id + "_" + form_inputs[i]['name'] + '_error').text("Format incorrect. Type requis = " + input_type.toString());
             }
             else{
-
+                
                 //if valid input, append obj
                 //format : [[param_name : value]] 
                 obj[form_inputs[i]['name']] = value;
@@ -111,7 +109,7 @@ jQuery(document).ready(function ($) {
                 $('#' + form_id + "_" + form_inputs[i]['name'] + '_error').text("");
             }
         }
-
+        
         if(form_correct){
             return obj;
         }
@@ -120,10 +118,40 @@ jQuery(document).ready(function ($) {
         }
     }
 
-
+    
     var socket = io.connect('http://' + document.domain + ':' + location.port);
 
 
+    ////////////
+    /// DATA_TRAIN.HTML
+
+    socket.on('connect', function () {
+        
+        //send training parameters
+        $('.data').on('click', function(){
+            socket.emit('select_train_data', {
+                filename:"ok" + ".json"
+            })
+        })
+    });
+
+    //event = selected
+    socket.on('selected_train_data', function (msg) {
+        if(msg==1){
+            alert("Fichier de données d'entraînement sélectionné")
+        }
+        else{
+            alert("Erreur, veuillez choisir un fichier de données")
+        }
+    })
+
+
+
+    
+    ////////////
+    /// MODELS.HTML
+
+    // Check training data parameters
     socket.on('connect', function () {
         
         //send training parameters
@@ -133,7 +161,7 @@ jQuery(document).ready(function ($) {
             var data = $(this).serializeArray();
             var obj = new Object();
             obj = check_training_parameters($(this).attr('id'), data);
-                      
+            
             
             if(obj != false){
                 socket.emit('start_training', {
@@ -146,9 +174,6 @@ jQuery(document).ready(function ($) {
         })
     });
     
-
-
-
     //event = training 
     socket.on('training', function (msg) {
         console.log('-----training');
