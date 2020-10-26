@@ -47,7 +47,7 @@ jQuery(document).ready(function ($) {
       })
     })
     .catch((error) => {
-      //Fixing the error for Chrome users
+      //Fixing error for Chrome users
       content.children().hide();
       content.append("<h1>Fichier incorrect</h1><p>Veuillez réessayer.</p>");
       if(popup_name == "popup_train"){
@@ -75,6 +75,7 @@ jQuery(document).ready(function ($) {
     popup_name = $(this).attr('popup_open');
     $('[popup_name="' + popup_name + '"]').fadeIn(300);
   });
+
   //close
   $('[popup_close]').on('click', function () {
     var popup_name = $(this).attr('popup_close');
@@ -82,9 +83,17 @@ jQuery(document).ready(function ($) {
     $('[popup_name="' + popup_name + '"]').fadeOut(300);
 
     //hide selected library (models.html)
+    //and reset all inputs values
     if(last_select){
       setTimeout(function(){ 
         last_select.hide();
+        last_select.trigger("reset");
+
+        //remove input error message
+        $('.input_error').each(function() {
+          $(this).text("");
+        });
+
       $('#libraries').val("A définir");
       }, 300);
     }
@@ -106,17 +115,33 @@ jQuery(document).ready(function ($) {
   //// Select library
   
   $('#libraries').change(function () {
-    selection = $('#libraries').val()
-    selection = $("#" + selection + "_options");
+    let lib = $('#libraries').val()
+    selection = $("#" + lib + "_options");
     if(last_select){
       last_select.hide();
+      last_select.trigger("reset");
+
+      //remove input error message
+      $('.input_error').each(function() {
+        $(this).text("");
+      });
     }
     selection.show();
     last_select = selection;
 
   });
-  
 
 
+  /////////////
+  //// Display library parameters info
+
+  $('.input_info').hover(
+    function(){
+      $("#"+ $(this).attr('id') + "_display").show();
+      
+    }, function(){
+        $("#"+ $(this).attr('id') + "_display").hide();
+    }
+  );
 
 });

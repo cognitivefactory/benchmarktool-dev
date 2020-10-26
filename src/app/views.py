@@ -1,8 +1,9 @@
 import os
 from flask import render_template, request, make_response, jsonify
-from app import app
+from app import server
 from flask_socketio import SocketIO
-
+import csv
+import pandas as pd
 import json
 from dataset import *
 from model import *
@@ -10,14 +11,15 @@ from model import *
 models_list = []
 train_data  = None
 test_data  = None
-socketio    = SocketIO(app, async_mode=None, logger=True, engineio_logger=True)
+socketio    = SocketIO(server, async_mode=None, logger=True, engineio_logger=True)
 
 
-@app.route('/')
+
+@server.route('/')
 def index():
     return render_template("index.html")
 
-@app.route('/data_train')
+@server.route('/data_train')
 def data_train():
     """ parcours des fichiers de métadonnées"""
     path = "datasets"
@@ -28,6 +30,9 @@ def data_train():
             try:
                 with open(path + "/" + metafile) as json_file:
                     data = json.load(json_file)
+
+                    # only display the 3 most frequent labels
+                    # stored in a list to be displayed using Jinja
                     labels = [None]*3
                     size = len(data["labels"])
                     for i in range(3):
@@ -47,7 +52,7 @@ def data_train():
     
     return render_template("data_train.html", files = files)
 
-@app.route('/models')
+@server.route('/models')
 def models():
     """ parcours des fichiers de métadonnées"""
     path = "libraries"
@@ -59,6 +64,8 @@ def models():
                 with open(path + "/" + metafile) as json_file:
                     data = json.load(json_file)
 
+                    # convert dictionnary to list
+                    # format : [['key'], values]
                     data["options"] = list(map(list, data["options"].items()))
                     files.append(data)
 
@@ -69,7 +76,7 @@ def models():
     
     return render_template("models.html", files = files)
 
-@app.route('/results')
+@server.route('/results')
 def results():
     global test_data
     global models_list
@@ -80,25 +87,32 @@ def results():
         return render_template("results.html",score = None, visuals = None)
     else:
         print(models_list)
-        score = {}
-        for model in models_list:
-            if (model.is_ready== True):
-                scores=model.test(test_data)  
-                if(model.model_format=="spacy_format"):
-                    for key, value in scores.items() :
-                        if (key == "ents_per_type"):
-                            scores=value
-                            score[model.model_name] = scores
-                if(model.model_format=="bio_format"):
-                    score[model.model_name] = scores
-        print(score)
-        #return render_template("results.html", score = score, visuals = visuals)
-        return render_template("results.html", score = score, visuals = None)
-    #return render_template("results.html",score = None, visuals = None)
 
+
+        with open('./src/tmp/test.csv', mode='a') as csv_file:
+            for model in models_list:
+                if (model.is_ready== 1):
+                    scores = model.test(test_data)
+                    model.write_data(scores,csv_file)
+                    model.is_ready = 2
+                    '''scores=model.test(test_data)["ents_per_type"]  
+                    if(model.model_format=="spacy_format"):
+                        for key, value in scores.items() :
+                            if (key == "ents_per_type"):
+                                scores=value
+                                score[model.model_name] = scores
+                    if(model.model_format=="bio_format"):
+                        score[model.model_name] = scores
+                    for key, res in scores.items():
+                        name = key
+                        writer.writerow({'model_name': name, 'precision': res["p"], 'recall': res["r"], 'f_score' : res["f"] })'''
+
+        #return render_template("results.html", score = score, visuals = visuals)
+        return render_template("dash.html", dash_url = '/dash/')
+    #return render_template("results.html",score = None, visuals = None)
             
 
-@app.route('/processing', methods=['POST'])
+@server.route('/processing', methods=['POST'])
 def processing():
     status = 100 # = fail
     try:
@@ -141,12 +155,12 @@ def processing():
         return make_response(jsonify({"message" : message}), status)
 
 
-@app.route('/progression')
+@server.route('/progression')
 def progression():
     return render_template("progression.html")
 
 
-@app.route('/add_train', methods=['POST'])
+@server.route('/add_train', methods=['POST'])
 def add_train():
     status = 100 # = fail
     try:
@@ -195,65 +209,46 @@ def add_train():
         return make_response(jsonify({"message" : message}), status)
 
 
-
-@socketio.on('start_training')
-def handle_my_custom_event(data, methods=['POST']):
-    print(data)
-
-    library = data["options"]["library"]
-    try:
-        global models_list
-        global train_data
-
-        if not train_data :
-            return socketio.emit('training', 0)
-
-            #TODO: automatiser l'appel des modèles
-        if(library == "spacy"):
-            model = SpacyModel(model_format = "spacy_format",model_name = data["options"]["model_name"],training_data = train_data, nb_iter=eval(data["options"]["nb_iter"]), out_dir=data["options"]["out_dir"], model= None)
-            models_list.append(model)
-            socketio.emit('training', 1)
-            model.train()
-            socketio.emit('training_done', 1)
-
-        if(library == "flair"):
-            print(data["options"]["model_name"])
-            print(train_data)
-            print(eval(data["options"]["nb_iter"]))
-            print(eval(data["options"]["lr"]))
-            print(eval(data["options"]["batch"]))
-            print(data["options"]["mode"])
-            print(data["options"]["out_dir"])
-            model = FlairModel(model_format="bio_format", model_name=data["options"]["model_name"], training_data=train_data, nb_iter=eval(data["options"]["nb_iter"]),lr=eval(data["options"]["lr"]), batch=eval(data["options"]["batch"]), mode=data["options"]["mode"], out_dir=data["options"]["out_dir"])
-            models_list.append(model)
-            socketio.emit('training', 1)
-            print(model)
-            model.train()
-            socketio.emit('training_done', 1)
-
-    except:
-        return socketio.emit('model', 0)
-    """
-    name = str(json)
+@socketio.on('select_train_data')
+def select_train_data(filename, methods=['POST']):
     global train_data
 
+    try:
+        with open("./datasets/" + filename['filename'], 'r') as file:
+            train_data = TrainData()
+            train_data.from_metadata(json.load(file))
+        
+            socketio.emit('selected_train_data', 1)
+
+    except:
+        socketio.emit('selected_train_data', 0)
+
+
+
+
+@socketio.on('start_training')
+def start_training(data, methods=['POST']):
+    global models_list
+    global train_data
+
+    library = data["options"]["library"]
+
+    # only keep parameters
+    del data["options"]["library"]
+        
     if not train_data :
         return socketio.emit('training', 0)
-
+    
     try:
-        global spacy_model
-        spacy_model = SpacyModel(model_format = "spacy_format",model_name = name,training_data = train_data, nb_iter=15, out_dir= None, model= None)
-        
-        socketio.emit('training', 1)
-        spacy_model.train()
+        class_model = library.capitalize() + "Model"
+
+        model = eval(class_model + "(parameters=" + str(data["options"]) +")")
+        model.add_training_data(train_data)
+        models_list.append(model)
+
+        socketio.emit("training", 1)
+        model.train()
         socketio.emit('training_done', 1)
 
-        
-        global flair_model
-        flair_model = FlairModel(model_format="bio_format", model_name=name, training_data=train_data, nb_iter=2)
-        socketio.emit('training', 1)
-        flair_model.train()
-        
-    except:
+    except: 
         return socketio.emit('model', 0)
-    """

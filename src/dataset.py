@@ -10,11 +10,12 @@ import random
 #### Dataset
 
 class Dataset(object):
-    def __init__(self, title):
+
+    def __init__(self, title=None):
         self.title = title
         
     def filter_json(self, json_file):
-        """keeps only the text elements and entities of the JSON file"""
+        """keeps only the text elements and entities of the JSON file."""
         file = []
         for o in json_file:
             try:
@@ -37,7 +38,7 @@ class Dataset(object):
     
     
     def is_correct(self):
-        """checks if the content of the file is correct"""
+        """checks if the content of the file is correct."""
 
         r_str = "((\"[^\"]+\")|(\'[^\']+\'))"
         r_entity = "\[\d+,\s*\d+,\s*" + r_str + "\]"
@@ -53,9 +54,9 @@ class Dataset(object):
 
 #### TrainData
 
-class TrainData(Dataset):
-    def __init__(self, title):
-        Dataset.__init__(self, title)
+class TrainData(Dataset):    
+    def __init__(self, title=None):
+        Dataset.__init__(self, title=None)
         self.hash = ""
         self.nb_entities = 0
         self.labels = []
@@ -66,7 +67,7 @@ class TrainData(Dataset):
     
     
     def metadata(self):
-        """completes the object properties to create metadata"""       
+        """completes the object properties to create metadata."""       
         dic = {}
         nb_entities = 0
         for obj in self.file:
@@ -79,8 +80,19 @@ class TrainData(Dataset):
         #MD5 hash - encoded data in hexadecimal format.
         self.hash = hashlib.md5(str(self.file).encode()).hexdigest()
         return True
+
+
+    def from_metadata(self, meta_content):
+        """fill object properties from a metadata file."""
+        self.title = meta_content['title']
+        self.hash = meta_content['hash']
+        self.file = meta_content['file']
+        self.nb_entities = meta_content['nb_entities']
+        self.labels = meta_content['labels']
+
     
     def create_metafile(self):
+        """creates a file with the metadata."""
         meta = {}
         meta['title'] = self.title
         meta['hash'] = self.hash
@@ -88,7 +100,7 @@ class TrainData(Dataset):
         meta['nb_entities'] = self.nb_entities
         meta['labels'] = self.labels
         #TODO : vérifier si le fichier existe déjà ou non
-        with open("datasets/"+self.title+'.json', 'w') as outfile:
+        with open("./datasets/"+self.title+'.json', 'w') as outfile:
             json.dump(meta, outfile)
             return True
         return False

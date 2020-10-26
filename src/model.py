@@ -1,6 +1,3 @@
-''' changer chemins relatifs flair
-installer flair + mettre à jour requirements'''
-
 
 from pathlib import Path
 from dataset import *
@@ -81,50 +78,63 @@ def convert_format(dataset, model_format):
                 file.write("\n")
 
             file.close()
-            return "src/tmp/format.txt"
+            return filepath
         
 
 
 
 class Model(object):
-    def __init__(self, model_format, model_name, training_data, nb_iter, out_dir):
-        self.model_name = model_name
-        self.nb_iter = nb_iter
-        self.training_data = training_data
-        self.out_dir = out_dir
-        self.is_ready = False
+    def __init__(self, model_format, parameters):
+        self.model_name = parameters['model_name']
+        self.nb_iter = int(parameters['nb_iter'])
+        self.training_data = None
+        self.out_dir = parameters['out_dir']
+        self.is_ready = 0
         self.model_format=model_format.lower()
 
+    def add_training_data(self, training_data):
+        self.training_data = training_data
+
 class SpacyModel(Model):
-    def __init__(self, model_format, model_name, training_data, nb_iter, out_dir,model):
-        Model.__init__(self,model_format, model_name, training_data, nb_iter, out_dir)
+    def __init__(self, parameters, model=None):
+        Model.__init__(self,
+                        model_format="spacy_format",
+                        parameters=parameters)
+
+        self.model = model
         self.visuals = []
-        if model is not None:
-            self.nlp = spacy.load(model)
-            print("Loaded model '%s'" % model)
-        else:
-            self.nlp = spacy.blank('fr')
-            print("Created new model")
-            
-        if 'ner' not in self.nlp.pipe_names:
-            self.ner = self.nlp.create_pipe('ner')
-            self.nlp.add_pipe(self.ner)
-        else:
-            self.ner = self.nlp.get_pipe('ner')
-        labels = [ label for label in training_data.labels]
-        for l in labels :
-            self.ner.add_label(l)
-        if model is None:
-            self.optimizer = self.nlp.begin_training()
-        else:
-            self.optimizer = self.nlp.entity.create_optimizer()
 
     def get_visuals(self):
         return self.visuals 
             
     def train(self):
+        if self.model is not None:
+            self.nlp = spacy.load(model)
+            # print("Loaded model '%s'" % model)
+        else:
+            self.nlp = spacy.blank('fr')
+            # print("Created new model")
+
+
+        if 'ner' not in self.nlp.pipe_names:
+            self.ner = self.nlp.create_pipe('ner')
+            self.nlp.add_pipe(self.ner)
+        else:
+            self.ner = self.nlp.get_pipe('ner')
+            
+
+        if self.model is None:
+            self.optimizer = self.nlp.begin_training()
+        else:
+            self.optimizer = self.nlp.entity.create_optimizer()
+
+        labels = [ label for label in self.training_data.labels]
+        for l in labels :
+            self.ner.add_label(l)
+
         self.training_data = convert_format(dataset=self.training_data, model_format=self.model_format)
         other_pipes = [pipe for pipe in self.nlp.pipe_names if pipe != 'ner']
+        
         with self.nlp.disable_pipes(*other_pipes):
             for itn in range(self.nb_iter):
                 random.shuffle(self.training_data)
@@ -133,12 +143,12 @@ class SpacyModel(Model):
                     self.nlp.update([text], [annotations], sgd=self.optimizer, drop=0.35,
                         losses=losses)
                 print(losses)
-        self.is_ready = True
+        self.is_ready = 1
                 
-    def test(self, test_data):
+     def test(self, test_data):
         #conversion des données
         data = convert_format(dataset=test_data, model_format=self.model_format)
-
+        res={"model_name" : self.model_name}
 
         scorer = Scorer()
         for sents, ents in data:
@@ -149,8 +159,22 @@ class SpacyModel(Model):
             visual = visual.replace("\n\n","\n")
             self.visuals.append(visual)
             scorer.score(pred_value, gold)
-            print(scorer.scores)
-        return scorer.scores
+            score = scorer.scores
+            res["precision"] = score["ents_p"]
+            res["recall"] = score["ents_r"]
+            res["f_score"] = score["ents_f"]
+            score["ents_per_type"]
+            res["score_by_label"] = score["ents_per_type"]
+            #print(scorer.scores)
+            print(res)
+
+
+        return res
+   
+    def write_data(self,scores,csv_file):
+        fieldnames = ['model_name', 'precision', 'recall', 'f_score','score_by_label']
+        writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
+        writer.writerow(scores)
    
 
     def save(self):
@@ -164,15 +188,15 @@ class SpacyModel(Model):
 
 
 class FlairModel(Model):
-    """Class to train/test a model using flair"""
+    """Class to train/test a model using flair."""
+
     
-    def __init__(self,model_format, model_name, training_data, nb_iter=10, lr=0.1, batch=32, mode='cpu', out_dir=None):
-        Model.__init__(self,model_format, model_name, training_data, nb_iter, out_dir)
-        self.model_name = './'+ model_name
-        self.learning_rate=lr
-        self.batch_size=batch
-        self.mode=mode
-        self.training_data = training_data
+    def __init__(self, parameters):
+        Model.__init__(self, model_format="bio_format", parameters=parameters)
+        self.model_name = './'+ parameters['model_name']
+        self.learning_rate= float(parameters['lr'])
+        self.batch_size= int(parameters['batch'])
+        self.mode=parameters['mode']
         
 
 
@@ -198,7 +222,7 @@ class FlairModel(Model):
                                                 use_crf=True)
         self.trainer = ModelTrainer(tagger, corpus)
         self.trainer.train(self.model_name,learning_rate=self.learning_rate,mini_batch_size=self.batch_size, max_epochs=self.nb_iter,embeddings_storage_mode=self.mode)
-        self.is_ready = True
+        self.is_ready = 1
 
 
 
