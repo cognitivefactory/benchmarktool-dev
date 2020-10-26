@@ -210,28 +210,20 @@ def handle_my_custom_event(data, methods=['POST']):
 
     # only keep parameters
     del data["options"]["library"]
-
-    try:
         
-        if not train_data :
-            return socketio.emit('training', 0)
-        else :
-            # add training data to parameters
-            data["options"]["training_data"] = train_data
+    if not train_data :
+        return socketio.emit('training', 0)
+    
+    try:
+        class_model = library.capitalize() + "Model"
 
-
-        if(library == "spacy"):
-            print("---spacy")
-            model = SpacyModel(model_format="spacy_format", parameters=data["options"])
-
-        elif(library == "flair"):
-            print("----flair")
-            model = FlairModel(model_format="bio_format", parameters=data["options"])
-
+        model = eval(class_model + "(parameters=" + str(data["options"]) +")")
+        model.add_training_data(train_data)
         models_list.append(model)
+
         socketio.emit("training", 1)
         model.train()
         socketio.emit('training_done', 1)
 
-    except:
+    except: 
         return socketio.emit('model', 0)

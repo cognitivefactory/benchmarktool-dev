@@ -86,16 +86,20 @@ def convert_format(dataset, model_format):
 class Model(object):
     def __init__(self, model_format, parameters):
         self.model_name = parameters['model_name']
-        self.nb_iter = parameters['nb_iter']
-        self.training_data = parameters['training_data']
+        self.nb_iter = int(parameters['nb_iter'])
+        self.training_data = None
         self.out_dir = parameters['out_dir']
         self.is_ready = False
         self.model_format=model_format.lower()
 
+    def add_training_data(self, training_data):
+        self.training_data = training_data
+
 class SpacyModel(Model):
-    def __init__(self, model_format, parameters, model=None):
+    def __init__(self, parameters, model=None):
+        print("----------")
         Model.__init__(self,
-                        model_format=model_format,
+                        model_format="spacy_format",
                         parameters=parameters)
 
         self.visuals = []
@@ -113,9 +117,8 @@ class SpacyModel(Model):
             self.nlp.add_pipe(self.ner)
         else:
             self.ner = self.nlp.get_pipe('ner')
-        labels = [ label for label in self.training_data.labels]
-        for l in labels :
-            self.ner.add_label(l)
+            
+
         if model is None:
             self.optimizer = self.nlp.begin_training()
         else:
@@ -125,6 +128,10 @@ class SpacyModel(Model):
         return self.visuals 
             
     def train(self):
+        labels = [ label for label in self.training_data.labels]
+        for l in labels :
+            self.ner.add_label(l)
+
         self.training_data = convert_format(dataset=self.training_data, model_format=self.model_format)
         other_pipes = [pipe for pipe in self.nlp.pipe_names if pipe != 'ner']
         
@@ -170,13 +177,12 @@ class FlairModel(Model):
     """Class to train/test a model using flair."""
 
     
-    def __init__(self,model_format, parameters):
-        Model.__init__(self, model_format, parameters)
+    def __init__(self, parameters):
+        Model.__init__(self, model_format="bio_format", parameters=parameters)
         self.model_name = './'+ parameters['model_name']
-        self.learning_rate=parameters['lr']
-        self.batch_size=parameters['batch']
+        self.learning_rate= float(parameters['lr'])
+        self.batch_size= int(parameters['batch'])
         self.mode=parameters['mode']
-        self.training_data = parameters['training_data']
         
 
 
