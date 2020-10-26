@@ -102,14 +102,19 @@ class SpacyModel(Model):
                         model_format="spacy_format",
                         parameters=parameters)
 
+        self.model = model;
         self.visuals = []
 
-        if model is not None:
+    def get_visuals(self):
+        return self.visuals 
+            
+    def train(self):
+        if self.model is not None:
             self.nlp = spacy.load(model)
-            print("Loaded model '%s'" % model)
+            # print("Loaded model '%s'" % model)
         else:
             self.nlp = spacy.blank('fr')
-            print("Created new model")
+            # print("Created new model")
 
 
         if 'ner' not in self.nlp.pipe_names:
@@ -119,15 +124,11 @@ class SpacyModel(Model):
             self.ner = self.nlp.get_pipe('ner')
             
 
-        if model is None:
+        if self.model is None:
             self.optimizer = self.nlp.begin_training()
         else:
             self.optimizer = self.nlp.entity.create_optimizer()
 
-    def get_visuals(self):
-        return self.visuals 
-            
-    def train(self):
         labels = [ label for label in self.training_data.labels]
         for l in labels :
             self.ner.add_label(l)
