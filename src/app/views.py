@@ -1,8 +1,9 @@
 import os
 from flask import render_template, request, make_response, jsonify
-from app import app
+from app import server
 from flask_socketio import SocketIO
-
+import csv
+import pandas as pd
 import json
 from dataset import *
 from model import *
@@ -10,14 +11,15 @@ from model import *
 models_list = []
 train_data  = None
 test_data  = None
-socketio    = SocketIO(app, async_mode=None, logger=True, engineio_logger=True)
+socketio    = SocketIO(server, async_mode=None, logger=True, engineio_logger=True)
 
 
-@app.route('/')
+
+@server.route('/')
 def index():
     return render_template("index.html")
 
-@app.route('/data_train')
+@server.route('/data_train')
 def data_train():
     """ parcours des fichiers de métadonnées"""
     path = "datasets"
@@ -50,7 +52,7 @@ def data_train():
     
     return render_template("data_train.html", files = files)
 
-@app.route('/models')
+@server.route('/models')
 def models():
     """ parcours des fichiers de métadonnées"""
     path = "libraries"
@@ -74,7 +76,7 @@ def models():
     
     return render_template("models.html", files = files)
 
-@app.route('/results')
+@server.route('/results')
 def results():
     global test_data
     global models_list
@@ -85,25 +87,32 @@ def results():
         return render_template("results.html",score = None, visuals = None)
     else:
         print(models_list)
-        score = {}
-        for model in models_list:
-            if (model.is_ready== True):
-                scores=model.test(test_data)  
-                if(model.model_format=="spacy_format"):
-                    for key, value in scores.items() :
-                        if (key == "ents_per_type"):
-                            scores=value
-                            score[model.model_name] = scores
-                if(model.model_format=="bio_format"):
-                    score[model.model_name] = scores
-        print(score)
-        #return render_template("results.html", score = score, visuals = visuals)
-        return render_template("results.html", score = score, visuals = None)
-    #return render_template("results.html",score = None, visuals = None)
 
+
+        with open('./src/tmp/test.csv', mode='a') as csv_file:
+            for model in models_list:
+                if (model.is_ready== 1):
+                    scores = model.test(test_data)
+                    model.write_data(scores,csv_file)
+                    model.is_ready = 2
+                    '''scores=model.test(test_data)["ents_per_type"]  
+                    if(model.model_format=="spacy_format"):
+                        for key, value in scores.items() :
+                            if (key == "ents_per_type"):
+                                scores=value
+                                score[model.model_name] = scores
+                    if(model.model_format=="bio_format"):
+                        score[model.model_name] = scores
+                    for key, res in scores.items():
+                        name = key
+                        writer.writerow({'model_name': name, 'precision': res["p"], 'recall': res["r"], 'f_score' : res["f"] })'''
+
+        #return render_template("results.html", score = score, visuals = visuals)
+        return render_template("dash.html", dash_url = '/dash/')
+    #return render_template("results.html",score = None, visuals = None)
             
 
-@app.route('/processing', methods=['POST'])
+@server.route('/processing', methods=['POST'])
 def processing():
     status = 100 # = fail
     try:
@@ -146,58 +155,42 @@ def processing():
         return make_response(jsonify({"message" : message}), status)
 
 
-@app.route('/progression')
+@server.route('/progression')
 def progression():
     return render_template("progression.html")
 
 
-@app.route('/add_train', methods=['POST'])
+@server.route('/add_train', methods=['POST'])
 def add_train():
     status = 100 # = fail
-    try:
-        content = request.files['file']
-        try: 
-            content = content.read()
-            try:
-                content = json.loads(content)
-                content = content
-                global train_data
-                train_data = TrainData("train_data")
-
-                if not train_data.filter_json(content) : 
-                    message = "incorrect data structure (1)"
-                    print(message)
-                    return make_response(jsonify({"message" : message}), status)
-
-                if not train_data.is_correct() :
-                    message = "incorrect data structure (2)"
-                    print(message)
-                    return make_response(jsonify({"message" : message}), status)
-
-                if not train_data.metadata() :
-                    message = "failed to create metadata"
-                    print(message)
-                    return make_response(jsonify({"message" : message}), status)
-                
-                if not train_data.create_metafile():
-                    message = "failed to create metafile"
-                    print(message)
-                    return make_response(jsonify({"message" : message}), status)
-
-                return make_response(jsonify({"message" : "JSON received"}), 200) #200 = success
-
-            except:
-                message = "JSON not correct"
-                print(message)
-                return make_response(jsonify({"message" : message}), status)
-        except:
-            message = "cannot read the file"
-            print(message)
-            return make_response(jsonify({"message" : message}), status)
-    except:
-        message = "cannot open the file"
+    content = request.files['file']
+    content = content.read()
+    print(content)
+    global train_data
+    train_data = TrainData("train_data")
+    content = json.loads(content)
+    
+    if not train_data.filter_json(content) : 
+        message = "incorrect data structure (1)"
         print(message)
         return make_response(jsonify({"message" : message}), status)
+
+    if not train_data.is_correct() :
+        message = "incorrect data structure (2)"
+        print(message)
+        return make_response(jsonify({"message" : message}), status)
+
+    if not train_data.metadata() :
+        message = "failed to create metadata"
+        print(message)
+        return make_response(jsonify({"message" : message}), status)
+    
+    if not train_data.create_metafile():
+        message = "failed to create metafile"
+        print(message)
+        return make_response(jsonify({"message" : message}), status)
+
+    return make_response(jsonify({"message" : "JSON received"}), 200) #200 = success
 
 
 @socketio.on('select_train_data')

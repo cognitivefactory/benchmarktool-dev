@@ -130,7 +130,7 @@ jQuery(document).ready(function ($) {
         //send training parameters
         $('.data').on('click', function(){
             socket.emit('select_train_data', {
-                filename:"ok" + ".json"
+                filename: $(this).attr('filename') + ".json"
             })
         })
     });
@@ -138,10 +138,11 @@ jQuery(document).ready(function ($) {
     //event = selected
     socket.on('selected_train_data', function (msg) {
         if(msg==1){
-            alert("Fichier de données d'entraînement sélectionné")
+            alert("Fichier de données d'entraînement sélectionné");
+            setTimeout(function () { window.location = window.origin + '/models'; }, 2000);
         }
         else{
-            alert("Erreur, veuillez choisir un fichier de données")
+            alert("Erreur, veuillez choisir un fichier de données");
         }
     })
 
