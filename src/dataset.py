@@ -1,26 +1,22 @@
-""" Dataset : Parent class - checks and stores the data structure of an annotated JSON file.
-    TrainData : Child class - specific to training dataset: allows to store metadata.
+""" Dataset : Parent class - check and store the data structure of an annotated JSON file.
+    TrainData : Child class - specific to training dataset: allow to store metadata.
 """
 
 import json
 import re
 import hashlib
+import random
+import os
 
 #### Dataset
 
 class Dataset(object):
-    def __init__(self, title):
-        self.title = title
-        self.file = []
-    
-    def get_title(self):
-        return self.title
-    
-    def get_file(self):
-        return self.file
 
+    def __init__(self, title=""):
+        self.title = title
+        
     def filter_json(self, json_file):
-        """keeps only the text elements and entities of the JSON file"""
+        """keep only the text elements and entities of the JSON file."""
         file = []
         for o in json_file:
             try:
@@ -36,12 +32,14 @@ class Dataset(object):
                 return
             obj = {'text' : text, 'entities' : entities}
             file.append(obj)
-        self.file = file
+        
+               
+        self.file = file        
         return True
     
     
     def is_correct(self):
-        """checks if the content of the file is correct"""
+        """check if the content of the file is correct."""
 
         r_str = "((\"[^\"]+\")|(\'[^\']+\'))"
         r_entity = "\[\d+,\s*\d+,\s*" + r_str + "\]"
@@ -57,9 +55,9 @@ class Dataset(object):
 
 #### TrainData
 
-class TrainData(Dataset):
-    def __init__(self, title):
-        Dataset.__init__(self, title)
+class TrainData(Dataset):    
+    def __init__(self, title=""):
+        Dataset.__init__(self, title=title)
         self.hash = ""
         self.nb_entities = 0
         self.labels = []
@@ -68,17 +66,9 @@ class TrainData(Dataset):
         """print(obj)"""
         return 'the dataset "'+ self.title +'" has '+ str(self.nb_entities) +' entities.'
     
-    def get_nb_entities(self):
-        return self.nb_entities
-    
-    def get_labels(self):
-        return self.labels
-    
-    def get_hash(self):
-        return self.hash
     
     def metadata(self):
-        """completes the object properties to create metadata"""       
+        """complete the object properties to create metadata."""       
         dic = {}
         nb_entities = 0
         for obj in self.file:
@@ -91,3 +81,44 @@ class TrainData(Dataset):
         #MD5 hash - encoded data in hexadecimal format.
         self.hash = hashlib.md5(str(self.file).encode()).hexdigest()
         return True
+
+
+    def from_metadata(self, meta_content):
+        """fill object properties from a metadata file."""
+        self.title = meta_content['title']
+        self.hash = meta_content['hash']
+        self.file = meta_content['file']
+        self.nb_entities = meta_content['nb_entities']
+        self.labels = meta_content['labels']
+    
+    def metafile_exists(self):
+        """Check if a file already exists for this training dataset."""
+        path = "./datasets/"
+        metafiles = os.listdir(path)
+        for metafile in metafiles:
+            with open(path + "/" + metafile, encoding='utf-8') as json_file:
+                data = json.load(json_file)
+                if data['hash'] == self.hash:
+                    return True
+
+        return False
+
+    
+    def create_metafile(self):
+        """create a file with the metadata."""
+        
+        if(not self.metafile_exists()):
+            path = "./datasets/"
+
+            meta = {}
+            meta['title'] = self.title
+            meta['hash'] = self.hash
+            meta['file'] = self.file
+            meta['nb_entities'] = self.nb_entities
+            meta['labels'] = self.labels
+            with open(path + self.title + '.json', 'w') as outfile:
+                json.dump(meta, outfile)
+            print("metafile created")
+
+        else:
+            print("metafile already exists")

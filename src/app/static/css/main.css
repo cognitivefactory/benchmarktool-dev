@@ -1,10 +1,19 @@
+html{
+  font-size: 100%;
+}
+
 :root{
   --main-bg-color: #B7AC7F;
+}
+
+.hidden{
+  display: none;
 }
 
 
 .flex{
   display: flex;
+  flex-wrap: wrap;
 }
 
 body{
@@ -354,15 +363,17 @@ nav ul.sub li a:hover { color:var(--main-bg-color); }
  
 
 .popup_content {
-    width: 44rem;
-    margin: 0 auto;
-    box-sizing: border-box;
-    padding: 2.5rem;
-    margin-top: 6.25rem;
-    box-shadow: 0rem 0.125rem 0.375rem rgba(0,0,0,1);
-    border-radius: 0.1875rem;
-    background: #fff;
-    position: relative;
+  width: 44rem;
+  margin: 0 auto;
+  box-sizing: border-box;
+  padding: 2rem;
+  box-shadow: 0rem 0.125rem 0.375rem rgba(0,0,0,1);
+  border-radius: 0.1875rem;
+  background: #fff;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
 }
  
 

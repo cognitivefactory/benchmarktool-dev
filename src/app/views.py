@@ -1,139 +1,217 @@
-
+import os
 from flask import render_template, request, make_response, jsonify
-from app import app
+from app import server
 from flask_socketio import SocketIO
-
+import csv
+import pandas as pd
 import json
-from dataset import Dataset, TrainData
-from model import Model, SpacyModel
+from dataset import *
+from model import *
 
-spacy_model = None
+"""global variables"""
+models_list = []
 train_data  = None
-socketio    = SocketIO(app, async_mode=None, logger=True, engineio_logger=True)
+test_data  = None
+socketio    = SocketIO(server, async_mode=None, logger=True, engineio_logger=True)
 
 
-@app.route('/')
+
+@server.route('/')
 def index():
     return render_template("index.html")
 
-@app.route('/data_train')
+@server.route('/data_train')
 def data_train():
-    return render_template("data_train.html")
+    """ parsing of the metadata files"""
+    path = "datasets"
+    files = []
+    try:
+        metafiles = os.listdir(path)
+        for metafile in metafiles:
+            try:
+                with open(path + "/" + metafile) as json_file:
+                    data = json.load(json_file)
 
-@app.route('/models')
-def models():
-    return render_template("models.html")
+                    # only display the 3 most frequent labels
+                    # stored in a list to be displayed using Jinja
+                    labels = [None]*3
+                    size = len(data["labels"])
+                    for i in range(3):
+                        if size <= i:
+                            break
+                        else:
+                            labels[i] = (list(data["labels"])[i])
+                    data["labels"] = labels
 
-@app.route('/results')
-def results():
-    global spacy_model
-    if(spacy_model== None):
-        return render_template("results.html", score = None, visuals = None)
-    if (spacy_model.is_ready== False):
-        return render_template("results.html", score = None, visuals = None)    
+                    files.append(data)
+
+            except:
+                print("file doesn't exist")
+
+    except:
+        print("directory doesn't exist")
     
-    test_text = [("On dit qu\'un cheval est calme",{
-            'entities': [(13, 19, 'ANIMAL')]
-            }),
-            ("Un cheval endormi n\'est pas nécessairement un cheval calme",{
-             'entities': [(3, 9, 'ANIMAL'),(46,51, 'ANIMAL')]   
-            }),
-            ("souhaitez vous apprendre à monter à cheval?",{
-             'entities' : [(36,41,'ANIMAL')]
-            }),
-            ("Pour moi les chevaux sont les meilleurs animaux après les chats",{
-             'entities' : [(13,20,'ANIMAL'),(58,63, 'ANIMAL')]
-            })
-           ]
-    score=spacy_model.test(test_text)  
-    visuals=spacy_model.get_visuals()
-    for key, value in score.items() :
-        if (key == "ents_per_type"):
-            score=value
-            return render_template("results.html", score = score, visuals = visuals) 
+    return render_template("data_train.html", files = files)
 
-@app.route('/progression')
+@server.route('/models')
+def models():
+    """ parsing of the metadata files"""
+    path = "libraries"
+    files = []
+    try:
+        metafiles = os.listdir(path)
+        for metafile in metafiles:
+            try:
+                with open(path + "/" + metafile) as json_file:
+                    data = json.load(json_file)
+
+                    # convert dictionnary to list
+                    # format : [['key'], values]
+                    data["options"] = list(map(list, data["options"].items()))
+                    files.append(data)
+
+            except:
+                print("cannot read the metafile")    
+    except:
+        print("directory doesn't exist")
+    
+    return render_template("models.html", files = files)
+
+@server.route('/results')
+def results():
+    global test_data
+    global models_list
+
+    if (test_data==None or models_list == [] ):
+        return render_template("results.html",score = None, visuals = None)
+    else:
+        with open('./src/tmp/results.csv', mode='a') as csv_file:
+            for model in models_list:
+                #is_ready = 1 : model has been trained and is ready to be tested
+                if (model.is_ready== 1):
+                    scores = model.test(test_data)
+                    model.write_data(scores,csv_file)
+                    #is_ready = 2 : model has already been tested
+                    model.is_ready = 2
+        return render_template("dash.html", dash_url = '/dash/')
+
+            
+
+@server.route('/processing', methods=['POST'])
+def processing():
+    status = 100 # = fail
+    try:
+        content = request.files['file']
+        # get the file name without its extension
+        filename = (content.filename).replace(".json", "")
+
+        content = content.read().decode('utf-8')
+        content = json.loads(content)
+
+        global test_data
+        test_data = Dataset("test_data")
+
+        if not test_data.filter_json(content) : 
+            message = "incorrect test data structure (1)"
+            print(message)
+            return make_response(jsonify({"message" : message}), status)
+
+        if not test_data.is_correct() :
+            message = "incorrect test data structure (2)"
+            print(message)
+            return make_response(jsonify({"message" : message}), status)
+
+        status = 200
+        return make_response(jsonify({"message" : "JSON received"}), status)
+
+    except:
+        return make_response(jsonify({"message" : "cannot open the file"}), status)
+
+
+@server.route('/progression')
 def progression():
     return render_template("progression.html")
 
 
-@app.route('/add_train', methods=['POST'])
+@server.route('/add_train', methods=['POST'])
 def add_train():
     status = 100 # = fail
     try:
         content = request.files['file']
-        try: 
-            content = content.read()
-            try:
-                content = json.loads(content)
-                global train_data
-                train_data = TrainData("train_data")
+        # get the file name without its extension
+        filename = (content.filename).replace(".json", "")
+        
+        content = content.read().decode('utf-8')
+        content = json.loads(content)
 
-                if not train_data.filter_json(content) : 
-                    message = "incorrect data structure (1)"
-                    print(message)
-                    return make_response(jsonify({"message" : message}), status)
-
-                if not train_data.is_correct() :
-                    message = "incorrect data structure (2)"
-                    print(message)
-                    return make_response(jsonify({"message" : message}), status)
-
-                if not train_data.metadata() :
-                    message = "failed to create metadata"
-                    print(message)
-                    return make_response(jsonify({"message" : message}), status)
-
-                print(train_data)
-                print(train_data.get_labels())
-                
-                return make_response(jsonify({"message" : "JSON received"}), 200) #200 = success
-
-            except:
-                message = "JSON not correct"
-                print(message)
-                return make_response(jsonify({"message" : message}), status)
-        except:
-            message = "cannot read the file"
+        global train_data
+        train_data = TrainData(filename)
+            
+        if not train_data.filter_json(content) : 
+            message = "incorrect data structure (1)"
             print(message)
             return make_response(jsonify({"message" : message}), status)
+
+        if not train_data.is_correct() :
+            message = "incorrect data structure (2)"
+            print(message)
+            return make_response(jsonify({"message" : message}), status)
+
+        if not train_data.metadata() :
+            message = "failed to create metadata"
+            print(message)
+            return make_response(jsonify({"message" : message}), status)
+        
+        # save metafile
+        train_data.create_metafile()
+        status = 200
+        return make_response(jsonify({"message" : "JSON received"}), status) #200 = success
+
     except:
-        message = "cannot open the file"
-        print(message)
-        return make_response(jsonify({"message" : message}), status)
+        return make_response(jsonify({"message" : "cannot open the file"}), status)
 
-'''
-To do :
-in JS : 
-add eventlistener to know when the user wants to train a model
-with socketio, send information as a json 
 
-In Flask :
-@socketio.on('train_model')
-    - handle custom event to retrieve
-    information concerning the model (which library? ...)
-    - inform the client that the training has begun 
-    - train model using train dataset (global var: train)
-    - when it's done socketio.emit
-    
-in JS : create a notification popup when we receive a message from socketio
-'''
+
+@socketio.on('select_train_data')
+def select_train_data(filename, methods=['POST']):
+    global train_data
+
+    try:
+        with open("./datasets/" + filename['filename'], 'r') as file:
+            train_data = TrainData()
+            train_data.from_metadata(json.load(file))
+        
+            socketio.emit('selected_train_data', 1)
+
+    except:
+        socketio.emit('selected_train_data', 0)
+
+
 
 
 @socketio.on('start_training')
-def handle_my_custom_event(json, methods=['GET', 'POST']):
-    name = str(json)
+def start_training(data, methods=['POST']):
+    global models_list
     global train_data
 
+    library = data["options"]["library"]
+
+    # only keep parameters
+    del data["options"]["library"]
+        
     if not train_data :
         return socketio.emit('training', 0)
+    
+    try:
+        class_model = library.capitalize() + "Model"
 
-    socketio.emit('training', 1)
-    global spacy_model
-    spacy_model = SpacyModel(name,train_data,15, None, None)
-    spacy_model.convert_format()
-    spacy_model.train()
-    socketio.emit('training_done', 1)
+        model = eval(class_model + "(parameters=" + str(data["options"]) +")")
+        model.add_training_data(train_data)
+        models_list.append(model)
 
+        socketio.emit("training", 1)
+        model.train()
+        socketio.emit('training_done', 1)
 
-    """TODO : train the model here"""
+    except: 
+        return socketio.emit('model', 0)
