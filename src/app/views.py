@@ -163,50 +163,34 @@ def progression():
 @server.route('/add_train', methods=['POST'])
 def add_train():
     status = 100 # = fail
-    try:
-        content = request.files['file']
-        try: 
-            content = content.read()
-            try:
-                content = json.loads(content)
-                content = content
-                global train_data
-                train_data = TrainData("train_data")
-
-                if not train_data.filter_json(content) : 
-                    message = "incorrect data structure (1)"
-                    print(message)
-                    return make_response(jsonify({"message" : message}), status)
-
-                if not train_data.is_correct() :
-                    message = "incorrect data structure (2)"
-                    print(message)
-                    return make_response(jsonify({"message" : message}), status)
-
-                if not train_data.metadata() :
-                    message = "failed to create metadata"
-                    print(message)
-                    return make_response(jsonify({"message" : message}), status)
-                
-                if not train_data.create_metafile():
-                    message = "failed to create metafile"
-                    print(message)
-                    return make_response(jsonify({"message" : message}), status)
-
-                return make_response(jsonify({"message" : "JSON received"}), 200) #200 = success
-
-            except:
-                message = "JSON not correct"
-                print(message)
-                return make_response(jsonify({"message" : message}), status)
-        except:
-            message = "cannot read the file"
-            print(message)
-            return make_response(jsonify({"message" : message}), status)
-    except:
-        message = "cannot open the file"
+    content = request.files['file']
+    content = content.read()
+    print(content)
+    global train_data
+    train_data = TrainData("train_data")
+    content = json.loads(content)
+    
+    if not train_data.filter_json(content) : 
+        message = "incorrect data structure (1)"
         print(message)
         return make_response(jsonify({"message" : message}), status)
+
+    if not train_data.is_correct() :
+        message = "incorrect data structure (2)"
+        print(message)
+        return make_response(jsonify({"message" : message}), status)
+
+    if not train_data.metadata() :
+        message = "failed to create metadata"
+        print(message)
+        return make_response(jsonify({"message" : message}), status)
+    
+    if not train_data.create_metafile():
+        message = "failed to create metafile"
+        print(message)
+        return make_response(jsonify({"message" : message}), status)
+
+    return make_response(jsonify({"message" : "JSON received"}), 200) #200 = success
 
 
 @socketio.on('select_train_data')

@@ -2,7 +2,8 @@
 from pathlib import Path
 from dataset import *
 import os
-
+import csv
+import pandas as pd
 #spaCy imports
 import spacy
 from tqdm import tqdm # loading bar
@@ -91,9 +92,17 @@ class Model(object):
         self.out_dir = parameters['out_dir']
         self.is_ready = 0
         self.model_format=model_format.lower()
+        self.losses = None
 
     def add_training_data(self, training_data):
         self.training_data = training_data
+
+    def write_data(self,scores,csv_file):
+        fieldnames = ['model_name', 'precision', 'recall', 'f_score','score_by_label', 'losses']
+        scores["losses"] = self.losses
+        writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
+        writer.writerow(scores)
+
 
 class SpacyModel(Model):
     def __init__(self, parameters, model=None):
@@ -103,6 +112,7 @@ class SpacyModel(Model):
 
         self.model = model
         self.visuals = []
+
 
     def get_visuals(self):
         return self.visuals 
@@ -136,20 +146,25 @@ class SpacyModel(Model):
         other_pipes = [pipe for pipe in self.nlp.pipe_names if pipe != 'ner']
         
         with self.nlp.disable_pipes(*other_pipes):
+            training_loss = []
             for itn in range(self.nb_iter):
                 random.shuffle(self.training_data)
                 losses = {}
+                
                 for text, annotations in tqdm(self.training_data):
                     self.nlp.update([text], [annotations], sgd=self.optimizer, drop=0.35,
                         losses=losses)
                 print(losses)
+                training_loss.append(losses["ner"])
+            print(training_loss)
+        self.losses = training_loss
         self.is_ready = 1
+
                 
-     def test(self, test_data):
+    def test(self, test_data):
         #conversion des données
         data = convert_format(dataset=test_data, model_format=self.model_format)
         res={"model_name" : self.model_name}
-
         scorer = Scorer()
         for sents, ents in data:
             doc_gold = self.nlp.make_doc(sents)
@@ -160,21 +175,16 @@ class SpacyModel(Model):
             self.visuals.append(visual)
             scorer.score(pred_value, gold)
             score = scorer.scores
-            res["precision"] = score["ents_p"]
-            res["recall"] = score["ents_r"]
-            res["f_score"] = score["ents_f"]
-            score["ents_per_type"]
-            res["score_by_label"] = score["ents_per_type"]
-            #print(scorer.scores)
-            print(res)
-
-
+        res["precision"] = score["ents_p"]
+        res["recall"] = score["ents_r"]
+        res["f_score"] = score["ents_f"]
+        score["ents_per_type"]
+        res["score_by_label"] = score["ents_per_type"]
+        #print(scorer.scores)
+        print(res)
         return res
    
-    def write_data(self,scores,csv_file):
-        fieldnames = ['model_name', 'precision', 'recall', 'f_score','score_by_label']
-        writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
-        writer.writerow(scores)
+
    
 
     def save(self):
@@ -201,49 +211,64 @@ class FlairModel(Model):
 
 
     def train(self):
-        self.training_data = convert_format(dataset=self.training_data, model_format=self.model_format)
-       
-        corpus: Corpus = ColumnCorpus(".", {0: 'text', 1: 'ner'},
-                                      train_file=self.training_data
-                                      )
-        tag_dictionary = corpus.make_tag_dictionary(tag_type='ner')
-        embedding_types: List[TokenEmbeddings] = [
+        filepath = "./" + self.model_name + "/best-model.pt"
+        ##########
+        #fonction de train modifiée pour pas train à chaque fois
+        if not os.path.exists(filepath):
+            self.training_data = convert_format(dataset=self.training_data, model_format=self.model_format)
+        
+            corpus: Corpus = ColumnCorpus(".", {0: 'text', 1: 'ner'},
+                                        train_file=self.training_data
+                                        )
+            tag_dictionary = corpus.make_tag_dictionary(tag_type='ner')
+            embedding_types: List[TokenEmbeddings] = [
 
-            WordEmbeddings('fr'),
-            FlairEmbeddings('fr-forward'),
-            FlairEmbeddings('fr-backward'),
-        ]
+                WordEmbeddings('fr'),
+                FlairEmbeddings('fr-forward'),
+                FlairEmbeddings('fr-backward'),
+            ]
 
-        embeddings: StackedEmbeddings = StackedEmbeddings(embeddings=embedding_types)
-        tagger: SequenceTagger = SequenceTagger(hidden_size=256,
-                                                embeddings=embeddings,
-                                                tag_dictionary=tag_dictionary,
-                                                tag_type='ner',
-                                                use_crf=True)
-        self.trainer = ModelTrainer(tagger, corpus)
-        self.trainer.train(self.model_name,learning_rate=self.learning_rate,mini_batch_size=self.batch_size, max_epochs=self.nb_iter,embeddings_storage_mode=self.mode)
+            embeddings: StackedEmbeddings = StackedEmbeddings(embeddings=embedding_types)
+            tagger: SequenceTagger = SequenceTagger(hidden_size=256,
+                                                    embeddings=embeddings,
+                                                    tag_dictionary=tag_dictionary,
+                                                    tag_type='ner',
+                                                    use_crf=True)
+            self.trainer = ModelTrainer(tagger, corpus)
+            self.trainer.train(self.model_name,learning_rate=self.learning_rate,mini_batch_size=self.batch_size, max_epochs=self.nb_iter,embeddings_storage_mode=self.mode)
         self.is_ready = 1
 
 
 
     def test(self, test_data):
         print(test_data)
+        #le train file soit être spécifié même si pas utilisé
         data = convert_format(dataset=test_data, model_format=self.model_format)
-
         model = SequenceTagger.load(self.model_name+'/best-model.pt')
-
         corpus: Corpus = ColumnCorpus(".", {0: 'text', 1: 'ner'},
-                                        train_file=None,
+                                        train_file=data,
                                         test_file=data
                                       )
         result, eval_loss = model.evaluate(corpus.test)
         # permet de retourner un dictionnaire de la même forme que celui fourni pas spaCy
-        res = result.detailed_results
-        res = res.replace("-", "").split()
-        index_label = res.index('class:') + 1
-        label = res[index_label]
-        s = res[-6:]
-        scores = {label : {'p': s[1], 'r': s[3], 'f': s[5]}}
-        return scores
+        results = result.detailed_results
+        global_res = result.log_line
+        global_res = global_res.split("\t")
+        res={"model_name" : self.model_name[2:]}
+        res["precision"] = float(global_res[0])*100
+        res["recall"] = float(global_res[1])*100
+        res["f_score"] = float(global_res[2])*100
+        results = results.split("\n")
+        results = results[6:]
+        score_by_labels = {}
+        for scores in results:
+            scores = scores.replace("/s"," ")
+            scores = scores.split()
+            score_by_labels[scores[0]] = {'p' : float(scores[11])*100, 'r' : float(scores[14])*100, 'f' : float(scores[17])*100}
+        res["score_by_label"]  = score_by_labels
+        loss_path = self.model_name + "/loss.tsv"
+        df = pd.read_csv(loss_path, sep = "\t" )
+        self.losses = df["TRAIN_LOSS"].tolist()
+        print(res)
+        return res
         
-

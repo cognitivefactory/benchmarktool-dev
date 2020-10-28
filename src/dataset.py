@@ -11,7 +11,7 @@ import random
 
 class Dataset(object):
 
-    def __init__(self, title=None):
+    def __init__(self, title=""):
         self.title = title
         
     def filter_json(self, json_file):
@@ -55,8 +55,8 @@ class Dataset(object):
 #### TrainData
 
 class TrainData(Dataset):    
-    def __init__(self, title=None):
-        Dataset.__init__(self, title=None)
+    def __init__(self, title=""):
+        Dataset.__init__(self, title=title)
         self.hash = ""
         self.nb_entities = 0
         self.labels = []
