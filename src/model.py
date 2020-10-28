@@ -79,13 +79,21 @@ class SpacyModel(Model):
             self.nlp.add_pipe(self.ner)
         else:
             self.ner = self.nlp.get_pipe('ner')
+<<<<<<< HEAD
             
 
         if self.model is None:
+=======
+        labels = [ label for label in training_data.get_labels()]
+        for l in labels :
+            self.ner.add_label(l)
+        if model is None:
+>>>>>>> 2374ae270e77300565abdb16512d4000a9d376cd
             self.optimizer = self.nlp.begin_training()
         else:
             self.optimizer = self.nlp.entity.create_optimizer()
 
+<<<<<<< HEAD
         labels = [ label for label in self.training_data.labels]
         for l in labels :
             self.ner.add_label(l)
@@ -99,10 +107,22 @@ class SpacyModel(Model):
                 random.shuffle(self.training_data)
                 losses = {}
                 
+=======
+    def get_visuals(self):
+        return self.visuals 
+            
+    def train(self):
+        other_pipes = [pipe for pipe in self.nlp.pipe_names if pipe != 'ner']
+        with self.nlp.disable_pipes(*other_pipes):
+            for itn in range(self.nb_iter):
+                random.shuffle(self.training_data)
+                losses = {}
+>>>>>>> 2374ae270e77300565abdb16512d4000a9d376cd
                 for text, annotations in tqdm(self.training_data):
                     self.nlp.update([text], [annotations], sgd=self.optimizer, drop=0.35,
                         losses=losses)
                 print(losses)
+<<<<<<< HEAD
                 training_loss.append(losses["ner"])
             print(training_loss)
         self.losses = training_loss
@@ -114,6 +134,13 @@ class SpacyModel(Model):
         res={"model_name" : self.model_name}
         scorer = Scorer()
         for sents, ents in data:
+=======
+        self.is_ready = True
+                
+    def test(self, test_data):
+        scorer = Scorer()
+        for sents, ents in test_data:
+>>>>>>> 2374ae270e77300565abdb16512d4000a9d376cd
             doc_gold = self.nlp.make_doc(sents)
             gold = GoldParse(doc_gold, entities=ents['entities'])
             pred_value = self.nlp(sents)
@@ -121,6 +148,7 @@ class SpacyModel(Model):
             visual = visual.replace("\n\n","\n")
             self.visuals.append(visual)
             scorer.score(pred_value, gold)
+<<<<<<< HEAD
             score = scorer.scores
         res["precision"] = score["ents_p"]
         res["recall"] = score["ents_r"]
@@ -130,6 +158,22 @@ class SpacyModel(Model):
         return res
 
     """save : not used for now
+=======
+        return scorer.scores
+   
+
+    def convert_format(self):
+        json_file=self.training_data.get_file()
+        data=[]
+        for obj in json_file :
+            entities = []
+            for e in obj['entities'] :
+                entities.append(tuple(e))
+            data.append((obj['text'], {'entities' : entities}))
+        self.training_data=data
+        return data
+    
+>>>>>>> 2374ae270e77300565abdb16512d4000a9d376cd
     def save(self):
         if self.out_dir is not None:
             self.out_dir = Path(self.out_dir)
@@ -137,6 +181,7 @@ class SpacyModel(Model):
             self.out_dir.mkdir()
         self.nlp.to_disk(self.out_dir)
         print("Modele saved in :", self.out_dir)
+<<<<<<< HEAD
     """
 
 
@@ -253,3 +298,7 @@ class FlairModel(Model):
         self.losses = df["TRAIN_LOSS"].tolist()
         return res
         
+=======
+
+                
+>>>>>>> 2374ae270e77300565abdb16512d4000a9d376cd

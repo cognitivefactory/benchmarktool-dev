@@ -98,6 +98,32 @@ jQuery(document).ready(function ($) {
       }, 300);
     }
 
+    fetch(`/add_train`, {
+      method: 'POST',
+      body: fd,
+      cache: 'no-cache',
+    })
+      //response from views.py
+      .then(function (response) {
+        if (response.status !== 200) {
+          content.children().hide();
+          content.append("<h1>Fichier incorrect</h1><p>Veuillez réessayer.</p>");
+          setTimeout(function () { window.location = window.origin + '/data_train'; }, 2000);
+          return;
+        }
+        response.json().then(function (data) {
+          content.children().hide();
+          content.append("<h1>Fichier ajouté<h1>");
+          setTimeout(function () { window.location = window.origin + '/models'; }, 2000);
+        })
+      })
+      .catch((error) => {
+        //Fixing the error for Chrome users
+        content.children().hide();
+        content.append("<h1>Fichier incorrect</h1><p>Veuillez réessayer.</p>");
+        setTimeout(function () { window.location = window.origin + '/data_train'; }, 2000);
+        return;
+      });
   });
 
 
