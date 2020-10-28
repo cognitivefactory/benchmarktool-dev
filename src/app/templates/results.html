@@ -3,6 +3,22 @@
 
 <div>
   <h1>Test de performance</h1>
+
+  <div class="test flex">
+    <a class="add flex" popup_open="popup_test" href="#">+</a>
+  </div>
+
+  <div class="popup" popup_name="popup_test">
+    <div class="popup_content flex">
+      <a class="close_button" popup_close="popup_test" href="#">x</a>
+      <h1>Ajout d'un jeu de données de tests</h1>
+      <label>Sélectionnez le fichier JSON à utiliser</label>
+      <input type="file" id="file_input" name="file">
+      <button id="submit_data">Ajouter</button>
+    </div>
+  </div>
+
+
   {% if visuals %}
   <h3>Visualisation avec displaCy</h3>
   <div id="visuals">
@@ -10,14 +26,20 @@
     <p>{{visual|markdown}}</p>
     {% endfor %}
   </div>
+  {% endif %}
+  {% if score %}
   <table>
-    <h3>Score par label</h3>
-    {% for key, value in score.items() %}
+    <h3>Score par label et par modèle</h3>
+    {% for key, res in score.items() %}
     <tr>
       <th> {{ key }} </th>
+      {% for key, value in res.items() %}
+      <td>{{key}}</td>
       <td> précision : {{value["p"]}} , </td>
       <td> f-score : {{ value["f"]}} , </td>
       <td> rappel : {{ value["r"] }} </td>
+      {% endfor %}
+      
     </tr>
     {% endfor %}
     {% else %}

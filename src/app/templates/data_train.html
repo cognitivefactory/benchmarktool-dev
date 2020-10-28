@@ -5,11 +5,25 @@
   
   <p class="warning">Veuillez sélectionner un jeu de données d'entrainement.</p>
   
+
   <div class="train flex">
-    <div class="data flex">bank_annotations</div>
+    {% for file in files%}
+        <div class="data flex" filename={{file["title"]}}>
+          <h1>{{file["title"]}}</h1>
+          <p>{{file["nb_entities"]}} annotations</p>
+          <div class="labels flex">
+            {% for i in range(3) %}
+              {% if file["labels"][i] != None %}
+                <p>{{file["labels"][i]}}</p>
+              {% endif %}
+            {% endfor %}
+          </div>
+        </div>
+    {% endfor %}
     <a class="add flex" popup_open="popup_train" href="#">+</a>
   </div>
-  
+  </div>
+
   <div class="popup" popup_name="popup_train">
     <div class="popup_content flex">
       <a class="close_button" popup_close="popup_train" href="#">x</a>
@@ -19,6 +33,7 @@
       <button id="submit_data">Ajouter</button>
     </div>
   </div>
-  
+
+
 </div>
 {% endblock %}

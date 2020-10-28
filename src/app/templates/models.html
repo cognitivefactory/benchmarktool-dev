@@ -2,22 +2,38 @@
 {% block content %}
 <div class="models">
   <h1>Modèles disponibles</h1>
-  <a class="add flex" popup_open="popup_start" href="#">spaCy</a>
+  
+  <a class="add flex" popup_open="popup_start" href="#">+</a>
   <div class="popup" popup_name="popup_start">
-    <div class="popup_content flex">
+    <div class="popup_content popup_training flex">
       <a class="close_button" popup_close="popup_start" href="#">x</a>
-      <h1 class="title">spaCy</h1>
-      <form action="" method="POST">
-        <label>Définir le nom du modèle : </label>
-        <input id="name" placeholder="nom du modèle" />
-        <ul>
-          <li>Rapidité : élevée</li>
-          <li>Performance : élevée</li>
-        </ul>
-        <p class="warning">La durée d'entraînement peut varier selon la taille du jeu de données d'entraînement</p>
-
-        <input id="submit_start" type="submit" value="Entraîner"/>
+      <form action="#" method="POST" id="library_form">
+        <label for="libraries">Veuillez sélectionner une librairie : </label>
+        <select name="libraries" id="libraries">
+          <option class="library">A définir</option>
+          {% for file in files %}
+          <option class="library" value={{file["name"]}}>{{file["name"]}}</option>
+          {% endfor %}
+        </select>
       </form>
+
+      {% for file in files %}
+        <form class="training_form hidden" id={{file["name"] + "_options"}} action="" method="POST">
+          {% for option in file["options"] %}
+          <div class="option flex">
+            <label id={{file["name"] + "_" + option[0]}} class="option_name"> {{option[0]}} </label>
+            <div class="input_container flex">
+              <input placeholder="{{option[1][2]}}" name="{{option[0]}}" input_type="{{option[1][0]}}"/>
+              <p id={{file['name'] + "_" + option[0] + "_info"}} class="input_info">?</p>
+              <p id={{file['name'] + "_" + option[0] + "_info_display"}} class="input_info_container hidden">{{option[1][1]}}</p>
+            </div>
+            <h3 id={{file["name"] + "_options_" + option[0] + "_error"}} class="input_error"></h3>
+          </div>
+          {% endfor %}
+          <input id="submit_start" type="submit" value="Entrainer" />
+        </form>
+      {% endfor %}
+
     </div>
   </div>
 </div>
