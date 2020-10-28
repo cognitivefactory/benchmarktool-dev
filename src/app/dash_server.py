@@ -49,9 +49,13 @@ def get_dataset_for_losses():
 
 def create_Dash(server):
     """ initiate the dash server """
-    filepath = './src/tmp/results.csv'
-    if os.path.exists(filepath):
-        os.remove(filepath)
+    filepath = './src/tmp'
+
+    if not os.path.exists(filepath):
+        os.mkdir(filepath)
+
+    if os.path.exists(filepath + "/results.csv"):
+        os.remove(filepath + "/results.csv")
 
     with open('./src/tmp/results.csv', mode='w') as csv_file:
         fieldnames = ['model_name', 'precision', 'recall', 'f_score','score_by_label','losses']
