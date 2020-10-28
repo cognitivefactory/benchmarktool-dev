@@ -5,11 +5,10 @@
         "nb_iter" : ["int", "nombre d'itérations, par défaut 10", "10"],
         "lr" : ["float", "learning rate, 0.1 par défaut", "0.1"], 
         "batch" : ["int", "taille du batch, par défaut 32", "32"],
-        "mode" : ["cpu|gpu", "cpu ou gpu", "cpu"],
-        "out_dir" : ["string", "nombre d'itérations, par défaut 10", "model"]
+        "mode" : ["cpu|gpu", "cpu ou gpu", "cpu"]
     },
     "technology" : "Bi directional long short term memory",
     "author"  : "Humboldt University of Berlin",
-    "version" : "0.6",
-    "date" : "17/08/2020"
+    "version" : "0.6.1",
+    "date" : "28/10/2020"
 }

@@ -8,6 +8,7 @@ import json
 from dataset import *
 from model import *
 
+"""global variables"""
 models_list = []
 train_data  = None
 test_data  = None
@@ -21,7 +22,7 @@ def index():
 
 @server.route('/data_train')
 def data_train():
-    """ parcours des fichiers de métadonnées"""
+    """ parsing of the metadata files"""
     path = "datasets"
     files = []
     try:
@@ -54,7 +55,7 @@ def data_train():
 
 @server.route('/models')
 def models():
-    """ parcours des fichiers de métadonnées"""
+    """ parsing of the metadata files"""
     path = "libraries"
     files = []
     try:
@@ -80,36 +81,20 @@ def models():
 def results():
     global test_data
     global models_list
-    print(models_list)
-    print(f"jeu de test = {test_data}")
 
     if (test_data==None or models_list == [] ):
         return render_template("results.html",score = None, visuals = None)
     else:
-        print(models_list)
-
-
-        with open('./src/tmp/test.csv', mode='a') as csv_file:
+        with open('./src/tmp/results.csv', mode='a') as csv_file:
             for model in models_list:
+                #is_ready = 1 : model has been trained and is ready to be tested
                 if (model.is_ready== 1):
                     scores = model.test(test_data)
                     model.write_data(scores,csv_file)
+                    #is_ready = 2 : model has already been tested
                     model.is_ready = 2
-                    '''scores=model.test(test_data)["ents_per_type"]  
-                    if(model.model_format=="spacy_format"):
-                        for key, value in scores.items() :
-                            if (key == "ents_per_type"):
-                                scores=value
-                                score[model.model_name] = scores
-                    if(model.model_format=="bio_format"):
-                        score[model.model_name] = scores
-                    for key, res in scores.items():
-                        name = key
-                        writer.writerow({'model_name': name, 'precision': res["p"], 'recall': res["r"], 'f_score' : res["f"] })'''
-
-        #return render_template("results.html", score = score, visuals = visuals)
         return render_template("dash.html", dash_url = '/dash/')
-    #return render_template("results.html",score = None, visuals = None)
+
             
 
 @server.route('/processing', methods=['POST'])
@@ -117,42 +102,30 @@ def processing():
     status = 100 # = fail
     try:
         content = request.files['file']
-        try: 
-            #TODO : récupérer le nom du fichier pour nommer l'objet dataset
-            content = content.read().decode('utf-8')
-            try:
-                content = json.loads(content)
-                global test_data
-                test_data = Dataset("test_data")
+        # get the file name without its extension
+        filename = (content.filename).replace(".json", "")
 
-                if not test_data.filter_json(content) : 
-                    message = "incorrect test data structure (1)"
-                    print(message)
-                    return make_response(jsonify({"message" : message}), status)
+        content = content.read().decode('utf-8')
+        content = json.loads(content)
 
-                if not test_data.is_correct() :
-                    message = "incorrect test data structure (2)"
-                    print(message)
-                    return make_response(jsonify({"message" : message}), status)
-                
-                
-                
-             
-                        
-                return make_response(jsonify({"message" : "JSON received"}), 200)
+        global test_data
+        test_data = Dataset("test_data")
 
-            except:
-                message = "JSON not correct"
-                print(message)
-                return make_response(jsonify({"message" : message}), status)
-        except:
-            message = "cannot read the file"
+        if not test_data.filter_json(content) : 
+            message = "incorrect test data structure (1)"
             print(message)
             return make_response(jsonify({"message" : message}), status)
+
+        if not test_data.is_correct() :
+            message = "incorrect test data structure (2)"
+            print(message)
+            return make_response(jsonify({"message" : message}), status)
+
+        status = 200
+        return make_response(jsonify({"message" : "JSON received"}), status)
+
     except:
-        message = "cannot open the file"
-        print(message)
-        return make_response(jsonify({"message" : message}), status)
+        return make_response(jsonify({"message" : "cannot open the file"}), status)
 
 
 @server.route('/progression')
@@ -163,35 +136,40 @@ def progression():
 @server.route('/add_train', methods=['POST'])
 def add_train():
     status = 100 # = fail
-    content = request.files['file']
+    try:
+        content = request.files['file']
+        # get the file name without its extension
+        filename = (content.filename).replace(".json", "")
+        
+        content = content.read().decode('utf-8')
+        content = json.loads(content)
 
-    # get the file name without its extension
-    filename = (content.filename).replace(".json", "")
-    
-    content = content.read()
-    global train_data
-    train_data = TrainData(filename)
-    content = json.loads(content)
-    
-    if not train_data.filter_json(content) : 
-        message = "incorrect data structure (1)"
-        print(message)
-        return make_response(jsonify({"message" : message}), status)
+        global train_data
+        train_data = TrainData(filename)
+            
+        if not train_data.filter_json(content) : 
+            message = "incorrect data structure (1)"
+            print(message)
+            return make_response(jsonify({"message" : message}), status)
 
-    if not train_data.is_correct() :
-        message = "incorrect data structure (2)"
-        print(message)
-        return make_response(jsonify({"message" : message}), status)
+        if not train_data.is_correct() :
+            message = "incorrect data structure (2)"
+            print(message)
+            return make_response(jsonify({"message" : message}), status)
 
-    if not train_data.metadata() :
-        message = "failed to create metadata"
-        print(message)
-        return make_response(jsonify({"message" : message}), status)
-    
-    # save metafile
-    train_data.create_metafile()
+        if not train_data.metadata() :
+            message = "failed to create metadata"
+            print(message)
+            return make_response(jsonify({"message" : message}), status)
+        
+        # save metafile
+        train_data.create_metafile()
+        status = 200
+        return make_response(jsonify({"message" : "JSON received"}), status) #200 = success
 
-    return make_response(jsonify({"message" : "JSON received"}), 200) #200 = success
+    except:
+        return make_response(jsonify({"message" : "cannot open the file"}), status)
+
 
 
 @socketio.on('select_train_data')

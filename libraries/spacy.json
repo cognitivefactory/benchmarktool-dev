@@ -2,11 +2,10 @@
     "name" : "spacy",
     "options" : {
         "model_name" : ["string", "nom donné pour sauvegarder le modèle", "spacyModel"],
-        "nb_iter" : ["int", "nombre d'itérations, par défaut 10", "10"],
-        "out_dir" : ["string", "dossier dans lequel le modèle sera sauvegardé", "model"]
+        "nb_iter" : ["int", "nombre d'itérations, par défaut 10", "10"]
     },
     "technologie" : "Réseau de neurones convolutif",
     "auteur"  : "Matthew Honnibal",
-    "version" : "2.2.4",
-    "date" : "12/03/2020"
+    "version" : "2.3.2",
+    "date" : "28/10/2020"
 }

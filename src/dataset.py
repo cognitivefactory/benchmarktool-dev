@@ -1,5 +1,5 @@
-""" Dataset : Parent class - checks and stores the data structure of an annotated JSON file.
-    TrainData : Child class - specific to training dataset: allows to store metadata.
+""" Dataset : Parent class - check and store the data structure of an annotated JSON file.
+    TrainData : Child class - specific to training dataset: allow to store metadata.
 """
 
 import json
@@ -16,7 +16,7 @@ class Dataset(object):
         self.title = title
         
     def filter_json(self, json_file):
-        """keeps only the text elements and entities of the JSON file."""
+        """keep only the text elements and entities of the JSON file."""
         file = []
         for o in json_file:
             try:
@@ -39,7 +39,7 @@ class Dataset(object):
     
     
     def is_correct(self):
-        """checks if the content of the file is correct."""
+        """check if the content of the file is correct."""
 
         r_str = "((\"[^\"]+\")|(\'[^\']+\'))"
         r_entity = "\[\d+,\s*\d+,\s*" + r_str + "\]"
@@ -68,7 +68,7 @@ class TrainData(Dataset):
     
     
     def metadata(self):
-        """completes the object properties to create metadata."""       
+        """complete the object properties to create metadata."""       
         dic = {}
         nb_entities = 0
         for obj in self.file:
@@ -92,7 +92,7 @@ class TrainData(Dataset):
         self.labels = meta_content['labels']
     
     def metafile_exists(self):
-        """Checks if a file already exists for this training dataset."""
+        """Check if a file already exists for this training dataset."""
         path = "./datasets/"
         metafiles = os.listdir(path)
         for metafile in metafiles:
@@ -105,7 +105,7 @@ class TrainData(Dataset):
 
     
     def create_metafile(self):
-        """creates a file with the metadata."""
+        """create a file with the metadata."""
         
         if(not self.metafile_exists()):
             path = "./datasets/"
