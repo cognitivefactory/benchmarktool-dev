@@ -6,6 +6,7 @@ import json
 import re
 import hashlib
 import random
+import os
 
 #### Dataset
 
@@ -32,7 +33,7 @@ class Dataset(object):
             obj = {'text' : text, 'entities' : entities}
             file.append(obj)
         
-        random.shuffle(file)        
+               
         self.file = file        
         return True
     
@@ -89,18 +90,35 @@ class TrainData(Dataset):
         self.file = meta_content['file']
         self.nb_entities = meta_content['nb_entities']
         self.labels = meta_content['labels']
+    
+    def metafile_exists(self):
+        """Checks if a file already exists for this training dataset."""
+        path = "./datasets/"
+        metafiles = os.listdir(path)
+        for metafile in metafiles:
+            with open(path + "/" + metafile, encoding='utf-8') as json_file:
+                data = json.load(json_file)
+                if data['hash'] == self.hash:
+                    return True
+
+        return False
 
     
     def create_metafile(self):
         """creates a file with the metadata."""
-        meta = {}
-        meta['title'] = self.title
-        meta['hash'] = self.hash
-        meta['file'] = self.file
-        meta['nb_entities'] = self.nb_entities
-        meta['labels'] = self.labels
-        #TODO : vérifier si le fichier existe déjà ou non
-        with open("./datasets/"+self.title+'.json', 'w') as outfile:
-            json.dump(meta, outfile)
-            return True
-        return False
+        
+        if(not self.metafile_exists()):
+            path = "./datasets/"
+
+            meta = {}
+            meta['title'] = self.title
+            meta['hash'] = self.hash
+            meta['file'] = self.file
+            meta['nb_entities'] = self.nb_entities
+            meta['labels'] = self.labels
+            with open(path + self.title + '.json', 'w') as outfile:
+                json.dump(meta, outfile)
+            print("metafile created")
+
+        else:
+            print("metafile already exists")

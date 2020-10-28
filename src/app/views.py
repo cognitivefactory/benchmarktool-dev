@@ -119,7 +119,7 @@ def processing():
         content = request.files['file']
         try: 
             #TODO : récupérer le nom du fichier pour nommer l'objet dataset
-            content = content.read()
+            content = content.read().decode('utf-8')
             try:
                 content = json.loads(content)
                 global test_data
@@ -164,10 +164,13 @@ def progression():
 def add_train():
     status = 100 # = fail
     content = request.files['file']
+
+    # get the file name without its extension
+    filename = (content.filename).replace(".json", "")
+    
     content = content.read()
-    print(content)
     global train_data
-    train_data = TrainData("train_data")
+    train_data = TrainData(filename)
     content = json.loads(content)
     
     if not train_data.filter_json(content) : 
@@ -185,10 +188,8 @@ def add_train():
         print(message)
         return make_response(jsonify({"message" : message}), status)
     
-    if not train_data.create_metafile():
-        message = "failed to create metafile"
-        print(message)
-        return make_response(jsonify({"message" : message}), status)
+    # save metafile
+    train_data.create_metafile()
 
     return make_response(jsonify({"message" : "JSON received"}), 200) #200 = success
 

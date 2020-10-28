@@ -13,8 +13,8 @@
 .data, .add{
   flex-direction: column;
   justify-content: center;
+  min-width: 10rem;
   border: 1px solid black;
-  width: 10rem;
   padding: 0.5rem;
   box-sizing: border-box;
   margin-left: 0.5rem;
