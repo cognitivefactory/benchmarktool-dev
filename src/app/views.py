@@ -27,6 +27,7 @@ def data_train():
     files = []
     try:
         metafiles = os.listdir(path)
+        print(metafiles)
         for metafile in metafiles:
             try:
                 with open(path + "/" + metafile) as json_file:
@@ -108,18 +109,21 @@ def processing():
         content = content.read().decode('utf-8')
         content = json.loads(content)
 
-        global test_data
-        test_data = Dataset("test_data")
+        tmp_dataset = Dataset("test_data")
 
-        if not test_data.filter_json(content) : 
+        if not tmp_dataset.filter_json(content) : 
             message = "incorrect test data structure (1)"
             print(message)
             return make_response(jsonify({"message" : message}), status)
 
-        if not test_data.is_correct() :
+        if not tmp_dataset.is_correct() :
             message = "incorrect test data structure (2)"
             print(message)
             return make_response(jsonify({"message" : message}), status)
+
+        global test_data
+        test_data = Dataset()
+        test_data.copy_object(tmp_dataset)
 
         status = 200
         return make_response(jsonify({"message" : "JSON received"}), status)

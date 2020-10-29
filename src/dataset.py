@@ -53,6 +53,13 @@ class Dataset(object):
         return True
 
 
+    def copy_object(self, dataset):
+        """copy Dataset object"""
+        self.title = dataset.title
+        self.file = dataset.file
+
+
+
 #### TrainData
 
 class TrainData(Dataset):    
