@@ -5,9 +5,16 @@ from flask_socketio import SocketIO
 import csv
 import pandas as pd
 import json
-from dataset import *
-from model import *
+from dataset import Dataset, TrainData
+import atexit
+import shutil
 
+# import models here
+from models.spacy_model import SpacyModel
+from models.flair_model import FlairModel
+
+
+# global variables
 models_list = []
 train_data  = None
 test_data  = None
@@ -21,11 +28,12 @@ def index():
 
 @server.route('/data_train')
 def data_train():
-    """ parcours des fichiers de métadonnées"""
+    """ parsing of the datasets metadata files"""
     path = "datasets"
     files = []
     try:
         metafiles = os.listdir(path)
+        print(metafiles)
         for metafile in metafiles:
             try:
                 with open(path + "/" + metafile) as json_file:
@@ -44,18 +52,20 @@ def data_train():
 
                     files.append(data)
 
-            except:
+            except Exception as ex:
                 print("file doesn't exist")
+                raise ex                
 
-    except:
+    except Exception as ex:
         print("directory doesn't exist")
+        raise ex
     
     return render_template("data_train.html", files = files)
 
 @server.route('/models')
 def models():
-    """ parcours des fichiers de métadonnées"""
-    path = "libraries"
+    """ parsing of the models metadata files"""
+    path = "src/models/libraries"
     files = []
     try:
         metafiles = os.listdir(path)
@@ -69,10 +79,12 @@ def models():
                     data["options"] = list(map(list, data["options"].items()))
                     files.append(data)
 
-            except:
-                print("cannot read the metafile")    
-    except:
+            except Exception as ex:
+                print("cannot read the metafile")
+                raise ex
+    except Exception as ex:
         print("directory doesn't exist")
+        raise ex
     
     return render_template("models.html", files = files)
 
@@ -80,36 +92,20 @@ def models():
 def results():
     global test_data
     global models_list
-    print(models_list)
-    print(f"jeu de test = {test_data}")
 
     if (test_data==None or models_list == [] ):
         return render_template("results.html",score = None, visuals = None)
     else:
-        print(models_list)
-
-
-        with open('./src/tmp/test.csv', mode='a') as csv_file:
+        with open('./src/tmp/results.csv', mode='a') as csv_file:
             for model in models_list:
+                #is_ready = 1 : model has been trained and is ready to be tested
                 if (model.is_ready== 1):
                     scores = model.test(test_data)
                     model.write_data(scores,csv_file)
+                    #is_ready = 2 : model has already been tested
                     model.is_ready = 2
-                    '''scores=model.test(test_data)["ents_per_type"]  
-                    if(model.model_format=="spacy_format"):
-                        for key, value in scores.items() :
-                            if (key == "ents_per_type"):
-                                scores=value
-                                score[model.model_name] = scores
-                    if(model.model_format=="bio_format"):
-                        score[model.model_name] = scores
-                    for key, res in scores.items():
-                        name = key
-                        writer.writerow({'model_name': name, 'precision': res["p"], 'recall': res["r"], 'f_score' : res["f"] })'''
-
-        #return render_template("results.html", score = score, visuals = visuals)
         return render_template("dash.html", dash_url = '/dash/')
-    #return render_template("results.html",score = None, visuals = None)
+
             
 
 @server.route('/processing', methods=['POST'])
@@ -117,42 +113,40 @@ def processing():
     status = 100 # = fail
     try:
         content = request.files['file']
-        try: 
-            #TODO : récupérer le nom du fichier pour nommer l'objet dataset
-            content = content.read()
-            try:
-                content = json.loads(content)
-                global test_data
-                test_data = Dataset("test_data")
+        # get the file name without its extension
+        filename = (content.filename).replace(".json", "")
 
-                if not test_data.filter_json(content) : 
-                    message = "incorrect test data structure (1)"
-                    print(message)
-                    return make_response(jsonify({"message" : message}), status)
+        content = content.read().decode('utf-8')
+        content = json.loads(content)
 
-                if not test_data.is_correct() :
-                    message = "incorrect test data structure (2)"
-                    print(message)
-                    return make_response(jsonify({"message" : message}), status)
-                
-                
-                
-             
-                        
-                return make_response(jsonify({"message" : "JSON received"}), 200)
+        tmp_dataset = Dataset(filename)
 
-            except:
-                message = "JSON not correct"
-                print(message)
-                return make_response(jsonify({"message" : message}), status)
-        except:
-            message = "cannot read the file"
+        if not tmp_dataset.filter_json(content) : 
+            message = "incorrect test data structure (1)"
             print(message)
             return make_response(jsonify({"message" : message}), status)
-    except:
-        message = "cannot open the file"
-        print(message)
-        return make_response(jsonify({"message" : message}), status)
+
+        if not tmp_dataset.is_correct() :
+            message = "incorrect test data structure (2)"
+            print(message)
+            return make_response(jsonify({"message" : message}), status)
+
+        if tmp_dataset.compute_hash() == train_data.hash:
+            message = "Error : Test data should not be the same file as your training dataset"
+            print(message)
+            return make_response(jsonify({"message" : message}), status)
+
+
+        global test_data
+        test_data = Dataset()
+        test_data.copy_object(tmp_dataset)
+
+        status = 200
+        return make_response(jsonify({"message" : "JSON received"}), status)
+
+    except Exception as ex:
+        print(ex)
+        return make_response(jsonify({"message" : str(ex)}), status)
 
 
 @server.route('/progression')
@@ -163,34 +157,42 @@ def progression():
 @server.route('/add_train', methods=['POST'])
 def add_train():
     status = 100 # = fail
-    content = request.files['file']
-    content = content.read()
-    print(content)
-    global train_data
-    train_data = TrainData("train_data")
-    content = json.loads(content)
-    
-    if not train_data.filter_json(content) : 
-        message = "incorrect data structure (1)"
-        print(message)
-        return make_response(jsonify({"message" : message}), status)
+    try:
+        content = request.files['file']
+        # get the file name without its extension
+        filename = (content.filename).replace(".json", "")
+        
+        content = content.read().decode('utf-8')
+        content = json.loads(content)
 
-    if not train_data.is_correct() :
-        message = "incorrect data structure (2)"
-        print(message)
-        return make_response(jsonify({"message" : message}), status)
+        global train_data
+        train_data = TrainData(filename)
+        
+        
+        if not train_data.filter_json(content) : 
+            message = "incorrect data structure (1)"
+            print(message)
+            return make_response(jsonify({"message" : message}), status)
+        
+        if not train_data.is_correct() :
+            message = "incorrect data structure (2)"
+            print(message)
+            return make_response(jsonify({"message" : message}), status)
 
-    if not train_data.metadata() :
-        message = "failed to create metadata"
-        print(message)
-        return make_response(jsonify({"message" : message}), status)
-    
-    if not train_data.create_metafile():
-        message = "failed to create metafile"
-        print(message)
-        return make_response(jsonify({"message" : message}), status)
+        if not train_data.metadata() :
+            message = "failed to create metadata"
+            print(message)
+            return make_response(jsonify({"message" : message}), status)
+        
+        # save metafile
+        train_data.create_metafile()
+        status = 200
+        return make_response(jsonify({"message" : "JSON received"}), status) #200 = success
 
-    return make_response(jsonify({"message" : "JSON received"}), 200) #200 = success
+    except Exception as ex:
+        print(ex)
+        return make_response(jsonify({"message" : str(ex)}), status)
+
 
 
 @socketio.on('select_train_data')
@@ -204,7 +206,8 @@ def select_train_data(filename, methods=['POST']):
         
             socketio.emit('selected_train_data', 1)
 
-    except:
+    except Exception as ex:
+        print(ex)
         socketio.emit('selected_train_data', 0)
 
 
@@ -234,5 +237,28 @@ def start_training(data, methods=['POST']):
         model.train()
         socketio.emit('training_done', 1)
 
-    except: 
+    except Exception as ex:
+        print(ex)
         return socketio.emit('model', 0)
+
+
+### trigger exit event
+def on_exit():
+    """ remove tmp folder on exit"""
+    path = os.path.join(os.getcwd(), 'src/tmp')
+    if os.path.exists(path):
+        print("deleting temporary files")
+        shutil.rmtree(path)
+
+    """ remove __pycache__"""
+    path = os.path.join(os.getcwd(), 'src/__pycache__')
+    if os.path.exists(path):
+        shutil.rmtree(path)
+    path = os.path.join(os.getcwd(), 'src/app/__pycache__')
+    if os.path.exists(path):
+        shutil.rmtree(path)
+    path = os.path.join(os.getcwd(), 'src/models/__pycache__')
+    if os.path.exists(path):
+        shutil.rmtree(path)
+
+atexit.register(on_exit)

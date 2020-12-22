@@ -12,22 +12,22 @@
         <select name="libraries" id="libraries">
           <option class="library">A définir</option>
           {% for file in files %}
-          <option class="library" value={{file["name"]}}>{{file["name"]}}</option>
+          <option class="library" value={{file["nom"]}}>{{file["nom"]}}</option>
           {% endfor %}
         </select>
       </form>
 
       {% for file in files %}
-        <form class="training_form hidden" id={{file["name"] + "_options"}} action="" method="POST">
+        <form class="training_form hidden" id={{file["nom"] + "_options"}} action="" method="POST">
           {% for option in file["options"] %}
           <div class="option flex">
-            <label id={{file["name"] + "_" + option[0]}} class="option_name"> {{option[0]}} </label>
+            <label id={{file["nom"] + "_" + option[0]}} class="option_name"> {{option[0]}} </label>
             <div class="input_container flex">
               <input placeholder="{{option[1][2]}}" name="{{option[0]}}" input_type="{{option[1][0]}}"/>
-              <p id={{file['name'] + "_" + option[0] + "_info"}} class="input_info">?</p>
-              <p id={{file['name'] + "_" + option[0] + "_info_display"}} class="input_info_container hidden">{{option[1][1]}}</p>
+              <p id={{file['nom'] + "_" + option[0] + "_info"}} class="input_info">?</p>
+              <p id={{file['nom'] + "_" + option[0] + "_info_display"}} class="input_info_container hidden">{{option[1][1]}}</p>
             </div>
-            <h3 id={{file["name"] + "_options_" + option[0] + "_error"}} class="input_error"></h3>
+            <h3 id={{file["nom"] + "_options_" + option[0] + "_error"}} class="input_error"></h3>
           </div>
           {% endfor %}
           <input id="submit_start" type="submit" value="Entrainer" />

@@ -14,6 +14,7 @@ jQuery(document).ready(function ($) {
             input_correct = true;
             value = form_inputs[i]['value'].trim();
 
+            //empty input
             if(value.length==0){
                 //console.log("empty value");
                 input_correct = false;
@@ -60,41 +61,41 @@ jQuery(document).ready(function ($) {
                                     input_correct = false;
                                     form_correct = false;
                                 }
+                        }
+                            
+                        break;
+                            
+                            
+                        case "string":
+                            //console.log(value + " should be a string");
+                            
+                            if(+value==+value){
+                                //console.log("value == number");
+                                input_correct = false;
+                                form_correct = false;
+                            }
+                            break;
+                            
+                        case "boolean":
+                            //console.log(value + "s hould be a boolean");
+                            
+                            if(value != "true" && value != "false"){
+                                //console.log("not equal true or false");
+                                
+                                input_correct = false;
+                                form_correct = false;
                             }
                             
                             break;
+
+                        default:
+                            input_correct = false;
+                            form_correct = false;
                             
-                            
-                            case "string":
-                                //console.log(value + " should be a string");
-                                
-                                if(+value==+value){
-                                    //console.log("value == number");
-                                    input_correct = false;
-                                    form_correct = false;
-                                }
-                                break;
-                                
-                                case "boolean":
-                                    //console.log(value + "s hould be a boolean");
-                                    
-                                    if(value != "true" && value != "false"){
-                                        //console.log("not equal true or false");
-                                        
-                                        input_correct = false;
-                                        form_correct = false;
-                                    }
-                                    
-                                    break;
-    
-                                    default:
-                                        input_correct = false;
-                                        form_correct = false;
-                                        
-                                        break;
-                                    }
-                                }
-                            } 
+                            break;
+                    }
+                }
+            } 
                             
             if(!input_correct){
                 $('#' + form_id + "_" + form_inputs[i]['name'] + '_error').text("Format incorrect. Type requis = " + input_type.toString());
@@ -139,7 +140,7 @@ jQuery(document).ready(function ($) {
     socket.on('selected_train_data', function (msg) {
         if(msg==1){
             alert("Fichier de données d'entraînement sélectionné");
-            setTimeout(function () { window.location = window.origin + '/models'; }, 2000);
+            window.location = window.origin + '/models';
         }
         else{
             alert("Erreur, veuillez choisir un fichier de données");
@@ -185,10 +186,10 @@ jQuery(document).ready(function ($) {
         if(msg!=1){
             content.append("<h1>Jeu de données d'entraînement vide</h1>")
             content.append("<p>Veuillez sélection un jeu de données d'entraînement</p>");
-            setTimeout(function () { window.location = window.origin + '/data_train'; }, 2000);
+            setTimeout(function () { window.location = window.origin + '/data_train'; }, 1000);
         }else{
             content.append("<h1>Démarrage de l'entraînement<h1>");
-            setTimeout(function () { window.location = window.origin + '/models'; }, 2000);
+            setTimeout(function () { window.location = window.origin + '/models'; }, 1000);
         }
     })
 

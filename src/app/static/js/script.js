@@ -30,9 +30,9 @@ jQuery(document).ready(function ($) {
         content.children().hide();
         content.append("<h1>Fichier incorrect</h1><p>Veuillez réessayer.</p>");
         if(popup_name == "popup_train"){
-          setTimeout(function () { window.location = window.origin + '/data_train'; }, 2000);
+          setTimeout(function () { window.location = window.origin + '/data_train'; }, 1000);
         }else{
-          setTimeout(function () { window.location = window.origin + '/results'; }, 2000);
+          setTimeout(function () { window.location = window.origin + '/results'; }, 1000);
         }            
         return;
       }
@@ -40,9 +40,9 @@ jQuery(document).ready(function ($) {
         content.children().hide();
         content.append("<h1>Fichier ajouté<h1>");
         if(popup_name == "popup_train"){
-          setTimeout(function () { window.location = window.origin + '/models'; }, 2000);
+          setTimeout(function () { window.location = window.origin + '/models'; }, 1000);
         }else{
-          setTimeout(function () { window.location = window.origin + '/results'; }, 2000);
+          setTimeout(function () { window.location = window.origin + '/results'; }, 1000);
         }
       })
     })
@@ -51,9 +51,9 @@ jQuery(document).ready(function ($) {
       content.children().hide();
       content.append("<h1>Fichier incorrect</h1><p>Veuillez réessayer.</p>");
       if(popup_name == "popup_train"){
-        setTimeout(function () { window.location = window.origin + '/data_train'; }, 2000);
+        setTimeout(function () { window.location = window.origin + '/data_train'; }, 1000);
       }else{
-        setTimeout(function () { window.location = window.origin + '/results'; }, 2000);
+        setTimeout(function () { window.location = window.origin + '/results'; }, 1000);
       }
       return;
     });
@@ -98,6 +98,32 @@ jQuery(document).ready(function ($) {
       }, 300);
     }
 
+    fetch(`/add_train`, {
+      method: 'POST',
+      body: fd,
+      cache: 'no-cache',
+    })
+      //response from views.py
+      .then(function (response) {
+        if (response.status !== 200) {
+          content.children().hide();
+          content.append("<h1>Fichier incorrect</h1><p>Veuillez réessayer.</p>");
+          setTimeout(function () { window.location = window.origin + '/data_train'; }, 2000);
+          return;
+        }
+        response.json().then(function (data) {
+          content.children().hide();
+          content.append("<h1>Fichier ajouté<h1>");
+          setTimeout(function () { window.location = window.origin + '/models'; }, 2000);
+        })
+      })
+      .catch((error) => {
+        //Fixing the error for Chrome users
+        content.children().hide();
+        content.append("<h1>Fichier incorrect</h1><p>Veuillez réessayer.</p>");
+        setTimeout(function () { window.location = window.origin + '/data_train'; }, 2000);
+        return;
+      });
   });
 
 

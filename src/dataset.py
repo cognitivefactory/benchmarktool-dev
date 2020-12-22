@@ -1,11 +1,12 @@
-""" Dataset : Parent class - checks and stores the data structure of an annotated JSON file.
-    TrainData : Child class - specific to training dataset: allows to store metadata.
+""" Dataset : Parent class - check and store the data structure of an annotated JSON file.
+    TrainData : Child class - specific to training dataset: allow to store metadata.
 """
 
 import json
 import re
 import hashlib
 import random
+import os
 
 #### Dataset
 
@@ -15,30 +16,28 @@ class Dataset(object):
         self.title = title
         
     def filter_json(self, json_file):
-        """keeps only the text elements and entities of the JSON file."""
+        """keep only the text elements and entities of the JSON file."""
         file = []
         for o in json_file:
             try:
                 text = o['text']
-                try:
-                    entities = o['entities']
-                    if not text or not entities : 
-                        return
-
-                except:
+                entities = o['entities']
+                if not text or not entities : 
                     return
-            except:
-                return
+            except Exception as ex:
+                    print("cannot filter json file")
+                    raise ex
+                    return
             obj = {'text' : text, 'entities' : entities}
             file.append(obj)
         
-        random.shuffle(file)        
+               
         self.file = file        
         return True
     
     
     def is_correct(self):
-        """checks if the content of the file is correct."""
+        """check if the content of the file is correct."""
 
         r_str = "((\"[^\"]+\")|(\'[^\']+\'))"
         r_entity = "\[\d+,\s*\d+,\s*" + r_str + "\]"
@@ -50,6 +49,16 @@ class Dataset(object):
                 if not re.fullmatch(r_entity, str(e)) or e[0] >= e[1]:
                     return False
         return True
+
+
+    def copy_object(self, dataset):
+        """copy Dataset object"""
+        self.title = dataset.title
+        self.file = dataset.file
+
+    def compute_hash(self):
+        return hashlib.md5(str(self.file).encode()).hexdigest()
+
 
 
 #### TrainData
@@ -67,9 +76,8 @@ class TrainData(Dataset):
     
     
     def metadata(self):
-        """completes the object properties to create metadata."""       
+        """complete the object properties to create metadata."""       
         dic = {}
-        nb_entities = 0
         for obj in self.file:
             self.nb_entities += len(obj['entities'])
             for e in obj['entities']:
@@ -78,7 +86,7 @@ class TrainData(Dataset):
         self.labels = {k: v for k, v in sorted(dic.items(), key=lambda item: item[1],reverse = True)}        
             
         #MD5 hash - encoded data in hexadecimal format.
-        self.hash = hashlib.md5(str(self.file).encode()).hexdigest()
+        self.hash = self.compute_hash()
         return True
 
 
@@ -89,18 +97,35 @@ class TrainData(Dataset):
         self.file = meta_content['file']
         self.nb_entities = meta_content['nb_entities']
         self.labels = meta_content['labels']
+    
+    def metafile_exists(self):
+        """Check if a file already exists for this training dataset."""
+        path = "./datasets/"
+        metafiles = os.listdir(path)
+        for metafile in metafiles:
+            with open(path + "/" + metafile, encoding='utf-8') as json_file:
+                data = json.load(json_file)
+                if data['hash'] == self.hash:
+                    return True
+
+        return False
 
     
     def create_metafile(self):
-        """creates a file with the metadata."""
-        meta = {}
-        meta['title'] = self.title
-        meta['hash'] = self.hash
-        meta['file'] = self.file
-        meta['nb_entities'] = self.nb_entities
-        meta['labels'] = self.labels
-        #TODO : vérifier si le fichier existe déjà ou non
-        with open("./datasets/"+self.title+'.json', 'w') as outfile:
-            json.dump(meta, outfile)
-            return True
-        return False
+        """create a file with the metadata."""
+        
+        if(not self.metafile_exists()):
+            path = "./datasets/"
+
+            meta = {}
+            meta['title'] = self.title
+            meta['hash'] = self.hash
+            meta['file'] = self.file
+            meta['nb_entities'] = self.nb_entities
+            meta['labels'] = self.labels
+            with open(path + self.title + '.json', 'w') as outfile:
+                json.dump(meta, outfile)
+            print("metafile created")
+
+        else:
+            print("metafile already exists")
