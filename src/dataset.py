@@ -21,15 +21,13 @@ class Dataset(object):
         for o in json_file:
             try:
                 text = o['text']
-                try:
-                    entities = o['entities']
-                    if not text or not entities : 
-                        return
-
-                except:
+                entities = o['entities']
+                if not text or not entities : 
                     return
-            except:
-                return
+            except Exception as ex:
+                    print("cannot filter json file")
+                    raise ex
+                    return
             obj = {'text' : text, 'entities' : entities}
             file.append(obj)
         
@@ -58,6 +56,9 @@ class Dataset(object):
         self.title = dataset.title
         self.file = dataset.file
 
+    def compute_hash(self):
+        return hashlib.md5(str(self.file).encode()).hexdigest()
+
 
 
 #### TrainData
@@ -77,7 +78,6 @@ class TrainData(Dataset):
     def metadata(self):
         """complete the object properties to create metadata."""       
         dic = {}
-        nb_entities = 0
         for obj in self.file:
             self.nb_entities += len(obj['entities'])
             for e in obj['entities']:
@@ -86,7 +86,7 @@ class TrainData(Dataset):
         self.labels = {k: v for k, v in sorted(dic.items(), key=lambda item: item[1],reverse = True)}        
             
         #MD5 hash - encoded data in hexadecimal format.
-        self.hash = hashlib.md5(str(self.file).encode()).hexdigest()
+        self.hash = self.compute_hash()
         return True
 
 

@@ -14,6 +14,7 @@ jQuery(document).ready(function ($) {
             input_correct = true;
             value = form_inputs[i]['value'].trim();
 
+            //empty input
             if(value.length==0){
                 //console.log("empty value");
                 input_correct = false;
@@ -60,41 +61,41 @@ jQuery(document).ready(function ($) {
                                     input_correct = false;
                                     form_correct = false;
                                 }
+                        }
+                            
+                        break;
+                            
+                            
+                        case "string":
+                            //console.log(value + " should be a string");
+                            
+                            if(+value==+value){
+                                //console.log("value == number");
+                                input_correct = false;
+                                form_correct = false;
+                            }
+                            break;
+                            
+                        case "boolean":
+                            //console.log(value + "s hould be a boolean");
+                            
+                            if(value != "true" && value != "false"){
+                                //console.log("not equal true or false");
+                                
+                                input_correct = false;
+                                form_correct = false;
                             }
                             
                             break;
+
+                        default:
+                            input_correct = false;
+                            form_correct = false;
                             
-                            
-                            case "string":
-                                //console.log(value + " should be a string");
-                                
-                                if(+value==+value){
-                                    //console.log("value == number");
-                                    input_correct = false;
-                                    form_correct = false;
-                                }
-                                break;
-                                
-                                case "boolean":
-                                    //console.log(value + "s hould be a boolean");
-                                    
-                                    if(value != "true" && value != "false"){
-                                        //console.log("not equal true or false");
-                                        
-                                        input_correct = false;
-                                        form_correct = false;
-                                    }
-                                    
-                                    break;
-    
-                                    default:
-                                        input_correct = false;
-                                        form_correct = false;
-                                        
-                                        break;
-                                    }
-                                }
-                            } 
+                            break;
+                    }
+                }
+            } 
                             
             if(!input_correct){
                 $('#' + form_id + "_" + form_inputs[i]['name'] + '_error').text("Format incorrect. Type requis = " + input_type.toString());

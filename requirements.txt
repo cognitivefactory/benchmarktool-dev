@@ -17,7 +17,7 @@ dash-table==4.10.1
 decorator==4.4.2
 Deprecated==1.2.10
 filelock==3.0.12
-flair==0.6.1
+flair==0.7
 Flask==1.1.2
 Flask-Compress==1.7.0
 Flask-Markdown==0.3
@@ -68,7 +68,7 @@ sacremoses==0.0.43
 scikit-learn==0.23.2
 scipy==1.5.3
 segtok==1.5.10
-sentencepiece==0.1.94
+sentencepiece==0.1.91
 six==1.15.0
 smart-open==3.0.0
 spacy==2.3.2
@@ -77,11 +77,11 @@ srsly==1.0.2
 tabulate==0.8.7
 thinc==7.4.1
 threadpoolctl==2.1.0
-tokenizers==0.9.2
+tokenizers==0.9.3
 toml==0.10.1
 torch==1.7.0
 tqdm==4.51.0
-transformers==3.4.0
+transformers==3.5.1
 typing-extensions==3.7.4.3
 urllib3==1.25.11
 wasabi==0.8.0
